@@ -305,20 +305,20 @@ export default function BlogForm() {
                 </div>
               )}
 
-              {(imageFile || videoFile) && (
+              {(imageFiles.length > 0 || videoFiles.length > 0) && (
                 <div>
                   <span className="text-sm font-medium">Media:</span>
                   <div className="mt-2 space-y-1">
-                    {imageFile && (
+                    {imageFiles.length > 0 && (
                       <div className="text-xs text-gray-600 flex items-center">
                         <Image className="mr-1 h-3 w-3" />
-                        {imageFile.name}
+                        {imageFiles.length} image(s) selected
                       </div>
                     )}
-                    {videoFile && (
+                    {videoFiles.length > 0 && (
                       <div className="text-xs text-gray-600 flex items-center">
                         <Video className="mr-1 h-3 w-3" />
-                        {videoFile.name}
+                        {videoFiles.length} video(s) selected
                       </div>
                     )}
                   </div>
@@ -328,31 +328,31 @@ export default function BlogForm() {
           </CardContent>
         </Card>
 
-        {/* AI Features Info */}
+        {/* Content Guidelines */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
-              <Bot className="mr-2 h-5 w-5 text-accent" />
-              AI Features
+              <FileText className="mr-2 h-5 w-5 text-primary" />
+              Content Guidelines
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-sm text-gray-600">
               <div className="flex items-start">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                <span>Generate comprehensive content from headlines</span>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Write engaging and informative content</span>
               </div>
               <div className="flex items-start">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                <span>Analyze uploaded images for context</span>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Include relevant images and media</span>
               </div>
               <div className="flex items-start">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                <span>Auto-generate post excerpts</span>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Create compelling excerpts for listings</span>
               </div>
               <div className="flex items-start">
-                <div className="w-2 h-2 bg-accent rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                <span>Professional tone optimized for education</span>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                <span>Focus on entrepreneurship topics</span>
               </div>
             </div>
           </CardContent>
