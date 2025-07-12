@@ -68,10 +68,10 @@ export function registerRoutes(app: Express): Server {
   // Public blog routes
   app.get("/api/blog-posts", async (req, res) => {
     try {
-      const { search, authorId, published = "true" } = req.query;
+      const { search, authorName, published = "true" } = req.query;
       const filters = {
         search: search as string,
-        authorId: authorId ? parseInt(authorId as string) : undefined,
+        authorName: authorName as string,
         published: published === "true"
       };
       
@@ -136,10 +136,10 @@ export function registerRoutes(app: Express): Server {
   // Admin-only routes
   app.get("/api/admin/blog-posts", requireAuth, async (req, res) => {
     try {
-      const { search, authorId } = req.query;
+      const { search, authorName } = req.query;
       const filters = {
         search: search as string,
-        authorId: authorId ? parseInt(authorId as string) : undefined,
+        authorName: authorName as string,
         published: undefined // Show all posts for admin
       };
       
@@ -171,7 +171,6 @@ export function registerRoutes(app: Express): Server {
         ...req.body,
         imageUrls: imageUrls.length > 0 ? imageUrls : null,
         videoUrls: videoUrls.length > 0 ? videoUrls : null,
-        authorId: parseInt(req.body.authorId),
         isPublished: req.body.isPublished === 'true',
         isAiGenerated: req.body.isAiGenerated === 'true'
       });
@@ -277,7 +276,8 @@ export function registerRoutes(app: Express): Server {
 
       const staffData = insertStaffSchema.parse({
         ...req.body,
-        imageUrl
+        imageUrl,
+        isActive: req.body.isActive === 'true'
       });
 
       const staff = await storage.createStaff(staffData);

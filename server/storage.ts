@@ -105,15 +105,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Blog post methods
-  async getAllBlogPosts(filters?: { search?: string; authorId?: number; published?: boolean }): Promise<BlogPostWithAuthor[]> {
+  async getAllBlogPosts(filters?: { search?: string; authorName?: string; published?: boolean }): Promise<BlogPostWithAuthor[]> {
     const conditions = [];
     
     if (filters?.published !== undefined) {
       conditions.push(eq(blogPosts.isPublished, filters.published));
     }
     
-    if (filters?.authorId) {
-      conditions.push(eq(blogPosts.authorId, filters.authorId));
+    if (filters?.authorName) {
+      conditions.push(ilike(blogPosts.authorName, `%${filters.authorName}%`));
     }
     
     if (filters?.search) {
@@ -126,22 +126,8 @@ export class DatabaseStorage implements IStorage {
     }
 
     const query = db
-      .select({
-        id: blogPosts.id,
-        title: blogPosts.title,
-        content: blogPosts.content,
-        excerpt: blogPosts.excerpt,
-        imageUrls: blogPosts.imageUrls,
-        videoUrls: blogPosts.videoUrls,
-        authorId: blogPosts.authorId,
-        isPublished: blogPosts.isPublished,
-        isAiGenerated: blogPosts.isAiGenerated,
-        createdAt: blogPosts.createdAt,
-        updatedAt: blogPosts.updatedAt,
-        author: staff,
-      })
+      .select()
       .from(blogPosts)
-      .leftJoin(staff, eq(blogPosts.authorId, staff.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(blogPosts.createdAt));
 
@@ -149,29 +135,14 @@ export class DatabaseStorage implements IStorage {
     
     return results.map(row => ({
       ...row,
-      author: row.author!,
       comments: [] // Comments will be loaded separately when needed
     }));
   }
 
   async getBlogPostById(id: number): Promise<BlogPostWithAuthor | undefined> {
     const [result] = await db
-      .select({
-        id: blogPosts.id,
-        title: blogPosts.title,
-        content: blogPosts.content,
-        excerpt: blogPosts.excerpt,
-        imageUrls: blogPosts.imageUrls,
-        videoUrls: blogPosts.videoUrls,
-        authorId: blogPosts.authorId,
-        isPublished: blogPosts.isPublished,
-        isAiGenerated: blogPosts.isAiGenerated,
-        createdAt: blogPosts.createdAt,
-        updatedAt: blogPosts.updatedAt,
-        author: staff,
-      })
+      .select()
       .from(blogPosts)
-      .leftJoin(staff, eq(blogPosts.authorId, staff.id))
       .where(eq(blogPosts.id, id));
 
     if (!result) return undefined;
@@ -180,7 +151,6 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...result,
-      author: result.author!,
       comments: postComments
     };
   }

@@ -25,7 +25,7 @@ export default function BlogForm() {
     title: "",
     content: "",
     excerpt: "",
-    authorId: "",
+    authorName: "",
     isPublished: false,
     isAiGenerated: false
   });
@@ -56,7 +56,7 @@ export default function BlogForm() {
         title: "",
         content: "",
         excerpt: "",
-        authorId: "",
+        authorName: "",
         isPublished: false,
         isAiGenerated: false
       });
@@ -79,7 +79,7 @@ export default function BlogForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim() || !formData.content.trim() || !formData.authorId) {
+    if (!formData.title.trim() || !formData.content.trim() || !formData.authorName.trim()) {
       toast({
         title: "Please fill in required fields",
         description: "Title, content, and author are required.",
@@ -92,7 +92,7 @@ export default function BlogForm() {
     submitData.append('title', formData.title);
     submitData.append('content', formData.content);
     submitData.append('excerpt', formData.excerpt);
-    submitData.append('authorId', formData.authorId);
+    submitData.append('authorName', formData.authorName);
     submitData.append('isPublished', formData.isPublished.toString());
     submitData.append('isAiGenerated', formData.isAiGenerated.toString());
 
@@ -218,18 +218,14 @@ export default function BlogForm() {
               {/* Author */}
               <div>
                 <Label htmlFor="author">Author *</Label>
-                <Select value={formData.authorId} onValueChange={(value) => handleInputChange('authorId', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select author" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {staff?.map((member) => (
-                      <SelectItem key={member.id} value={member.id.toString()}>
-                        {member.name} - {member.role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="author"
+                  type="text"
+                  placeholder="Enter author name..."
+                  value={formData.authorName}
+                  onChange={(e) => handleInputChange('authorName', e.target.value)}
+                  required
+                />
               </div>
 
               {/* Publishing Options */}

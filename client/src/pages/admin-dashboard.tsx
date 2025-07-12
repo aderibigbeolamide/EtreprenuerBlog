@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BlogForm from "@/components/admin/blog-form";
+import StaffForm from "@/components/admin/staff-form";
 import { 
   PlusCircle, 
   FileText, 
@@ -72,11 +73,12 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="posts">Blog Posts</TabsTrigger>
             <TabsTrigger value="create">Create Post</TabsTrigger>
             <TabsTrigger value="staff">Staff</TabsTrigger>
+            <TabsTrigger value="add-staff">Add Staff</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -369,6 +371,11 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Add Staff Tab */}
+          <TabsContent value="add-staff" className="space-y-6">
+            <StaffForm />
           </TabsContent>
         </Tabs>
       </div>

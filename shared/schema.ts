@@ -31,7 +31,7 @@ export const blogPosts = pgTable("blog_posts", {
   excerpt: text("excerpt").notNull(),
   imageUrls: text("image_urls").array(),
   videoUrls: text("video_urls").array(),
-  authorId: integer("author_id").references(() => staff.id).notNull(),
+  authorName: text("author_name").notNull(),
   isPublished: boolean("is_published").notNull().default(false),
   isAiGenerated: boolean("is_ai_generated").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -53,11 +53,7 @@ export const staffRelations = relations(staff, ({ many }) => ({
   blogPosts: many(blogPosts),
 }));
 
-export const blogPostsRelations = relations(blogPosts, ({ one, many }) => ({
-  author: one(staff, {
-    fields: [blogPosts.authorId],
-    references: [staff.id],
-  }),
+export const blogPostsRelations = relations(blogPosts, ({ many }) => ({
   comments: many(comments),
 }));
 
@@ -102,7 +98,6 @@ export type InsertComment = z.infer<typeof insertCommentSchema>;
 
 // Extended types with relations
 export type BlogPostWithAuthor = BlogPost & {
-  author: Staff;
   comments: Comment[];
 };
 
