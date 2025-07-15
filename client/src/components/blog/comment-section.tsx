@@ -7,11 +7,115 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, Reply, ChevronDown, ChevronRight } from "lucide-react";
 import type { Comment } from "@shared/schema";
 
 interface CommentSectionProps {
   postId: number;
+}
+
+interface CommentItemProps {
+  comment: Comment;
+  postId: number;
+  depth?: number;
+  onReply: (parentId: number) => void;
+}
+
+function CommentItem({ comment, postId, depth = 0, onReply }: CommentItemProps) {
+  const [showReplies, setShowReplies] = useState(true);
+  
+  const formatDate = (dateString: string) => {
+    const now = new Date();
+    const commentDate = new Date(dateString);
+    const diffInMinutes = Math.floor((now.getTime() - commentDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+  };
+
+  // Get replies for this comment
+  const { data: replies } = useQuery<Comment[]>({
+    queryKey: ['/api/blog-posts', postId, 'comments', comment.id, 'replies'],
+    queryFn: async () => {
+      const response = await fetch(`/api/blog-posts/${postId}/comments?parentId=${comment.id}`);
+      if (!response.ok) throw new Error('Failed to fetch replies');
+      return response.json();
+    },
+    enabled: !!comment.id
+  });
+
+  const hasReplies = replies && replies.length > 0;
+
+  return (
+    <div className={`${depth > 0 ? 'ml-8 border-l-2 border-gray-200 pl-4' : ''}`}>
+      <Card className={`${depth === 0 ? 'border-l-4 border-primary' : ''}`}>
+        <CardContent className="p-4">
+          <div className="flex items-center mb-3">
+            <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+              {comment.authorName.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">{comment.authorName}</div>
+              <div className="text-sm text-gray-500">{formatDate(comment.createdAt)}</div>
+            </div>
+          </div>
+          
+          <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-3">
+            {comment.content}
+          </p>
+          
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onReply(comment.id)}
+              className="text-primary hover:text-blue-700"
+            >
+              <Reply className="h-3 w-3 mr-1" />
+              Reply
+            </Button>
+            
+            {hasReplies && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowReplies(!showReplies)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                {showReplies ? (
+                  <ChevronDown className="h-3 w-3 mr-1" />
+                ) : (
+                  <ChevronRight className="h-3 w-3 mr-1" />
+                )}
+                {replies?.length} {replies?.length === 1 ? 'Reply' : 'Replies'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      
+      {hasReplies && showReplies && (
+        <div className="mt-3 space-y-3">
+          {replies?.map((reply) => (
+            <CommentItem 
+              key={reply.id} 
+              comment={reply} 
+              postId={postId}
+              depth={depth + 1}
+              onReply={onReply}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function CommentSection({ postId }: CommentSectionProps) {
@@ -20,7 +124,10 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     authorName: "",
     content: ""
   });
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [showReplyForm, setShowReplyForm] = useState(false);
 
+  // Get top-level comments (no parent)
   const { data: comments, isLoading } = useQuery<Comment[]>({
     queryKey: ['/api/blog-posts', postId, 'comments'],
     queryFn: async () => {
@@ -31,7 +138,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   });
 
   const createCommentMutation = useMutation({
-    mutationFn: async (data: { authorName: string; content: string }) => {
+    mutationFn: async (data: { authorName: string; content: string; parentId?: number }) => {
       const response = await fetch(`/api/blog-posts/${postId}/comments`, {
         method: 'POST',
         headers: {
@@ -45,10 +152,14 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     onSuccess: () => {
       toast({
         title: "Comment posted successfully!",
-        description: "Your comment has been added to the discussion.",
+        description: replyToId ? "Your reply has been added." : "Your comment has been added to the discussion.",
       });
       setCommentData({ authorName: "", content: "" });
+      setReplyToId(null);
+      setShowReplyForm(false);
       queryClient.invalidateQueries({ queryKey: ['/api/blog-posts', postId, 'comments'] });
+      // Also invalidate replies queries
+      queryClient.invalidateQueries({ queryKey: ['/api/blog-posts', postId, 'comments', replyToId, 'replies'] });
     },
     onError: () => {
       toast({
@@ -69,23 +180,24 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       });
       return;
     }
-    createCommentMutation.mutate(commentData);
+    
+    const submitData = {
+      ...commentData,
+      ...(replyToId && { parentId: replyToId })
+    };
+    
+    createCommentMutation.mutate(submitData);
   };
 
-  const formatDate = (dateString: string) => {
-    const now = new Date();
-    const commentDate = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - commentDate.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minutes ago`;
-    } else if (diffInMinutes < 1440) {
-      const hours = Math.floor(diffInMinutes / 60);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else {
-      const days = Math.floor(diffInMinutes / 1440);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    }
+  const handleReply = (parentId: number) => {
+    setReplyToId(parentId);
+    setShowReplyForm(true);
+  };
+
+  const handleCancelReply = () => {
+    setReplyToId(null);
+    setShowReplyForm(false);
+    setCommentData({ authorName: "", content: "" });
   };
 
   return (
@@ -100,7 +212,22 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       {/* Comment Form */}
       <Card className="bg-neutral">
         <CardHeader>
-          <CardTitle className="text-lg">Add a Comment</CardTitle>
+          <CardTitle className="text-lg">
+            {replyToId ? "Reply to Comment" : "Add a Comment"}
+          </CardTitle>
+          {replyToId && (
+            <div className="text-sm text-gray-600">
+              Replying to comment #{replyToId}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCancelReply}
+                className="ml-2 text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,11 +246,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             </div>
             <div>
               <label htmlFor="comment-content" className="block text-sm font-medium text-gray-700 mb-2">
-                Comment *
+                {replyToId ? "Reply *" : "Comment *"}
               </label>
               <Textarea
                 id="comment-content"
-                placeholder="Share your thoughts..."
+                placeholder={replyToId ? "Write your reply..." : "Share your thoughts..."}
                 rows={4}
                 value={commentData.content}
                 onChange={(e) => setCommentData(prev => ({ ...prev, content: e.target.value }))}
@@ -140,7 +267,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Post Comment
+                  {replyToId ? "Post Reply" : "Post Comment"}
                 </>
               )}
             </Button>
@@ -172,22 +299,12 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       ) : comments && comments.length > 0 ? (
         <div className="space-y-4">
           {comments.map((comment) => (
-            <Card key={comment.id} className="border-l-4 border-primary">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
-                    {comment.authorName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">{comment.authorName}</div>
-                    <div className="text-sm text-gray-500">{formatDate(comment.createdAt)}</div>
-                  </div>
-                </div>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {comment.content}
-                </p>
-              </CardContent>
-            </Card>
+            <CommentItem 
+              key={comment.id} 
+              comment={comment} 
+              postId={postId}
+              onReply={handleReply}
+            />
           ))}
         </div>
       ) : (

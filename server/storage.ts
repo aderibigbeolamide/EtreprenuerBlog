@@ -6,7 +6,7 @@ import {
   type Comment, type InsertComment
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or } from "drizzle-orm";
+import { eq, desc, and, ilike, or, isNull } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -34,7 +34,7 @@ export interface IStorage {
   deleteBlogPost(id: number): Promise<boolean>;
 
   // Comment methods
-  getCommentsByPostId(postId: number): Promise<Comment[]>;
+  getCommentsByPostId(postId: number, parentId?: number): Promise<Comment[]>;
   createComment(comment: InsertComment): Promise<Comment>;
   updateComment(id: number, comment: Partial<InsertComment>): Promise<Comment | undefined>;
   deleteComment(id: number): Promise<boolean>;
@@ -187,11 +187,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Comment methods
-  async getCommentsByPostId(postId: number): Promise<Comment[]> {
+  async getCommentsByPostId(postId: number, parentId?: number): Promise<Comment[]> {
+    let conditions = [eq(comments.postId, postId), eq(comments.isApproved, true)];
+    
+    if (parentId !== undefined) {
+      conditions.push(eq(comments.parentId, parentId));
+    } else {
+      // Get only top-level comments (no parent)
+      conditions.push(isNull(comments.parentId));
+    }
+    
     return await db
       .select()
       .from(comments)
-      .where(and(eq(comments.postId, postId), eq(comments.isApproved, true)))
+      .where(and(...conditions))
       .orderBy(desc(comments.createdAt));
   }
 

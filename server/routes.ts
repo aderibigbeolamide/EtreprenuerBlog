@@ -111,7 +111,9 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/blog-posts/:id/comments", async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
-      const comments = await storage.getCommentsByPostId(postId);
+      const parentId = req.query.parentId ? parseInt(req.query.parentId as string) : undefined;
+      
+      const comments = await storage.getCommentsByPostId(postId, parentId);
       res.json(comments);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch comments" });

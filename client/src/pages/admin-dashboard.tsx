@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import BlogForm from "@/components/admin/blog-form";
+import BlogManagement from "@/components/admin/blog-management";
 import StaffForm from "@/components/admin/staff-form";
 import { 
   PlusCircle, 
@@ -73,9 +74,10 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="posts">Blog Posts</TabsTrigger>
+            <TabsTrigger value="manage">Manage Posts</TabsTrigger>
             <TabsTrigger value="create">Create Post</TabsTrigger>
             <TabsTrigger value="staff">Staff</TabsTrigger>
             <TabsTrigger value="add-staff">Add Staff</TabsTrigger>
@@ -292,6 +294,15 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Manage Posts Tab */}
+          <TabsContent value="manage" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Manage Blog Posts</h2>
+              <p className="text-gray-600">Edit and delete existing blog posts.</p>
+            </div>
+            <BlogManagement />
           </TabsContent>
 
           {/* Create Post Tab */}

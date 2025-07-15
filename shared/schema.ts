@@ -42,6 +42,7 @@ export const blogPosts = pgTable("blog_posts", {
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   postId: integer("post_id").references(() => blogPosts.id).notNull(),
+  parentId: integer("parent_id"),
   authorName: text("author_name").notNull(),
   content: text("content").notNull(),
   isApproved: boolean("is_approved").notNull().default(true),
@@ -57,11 +58,16 @@ export const blogPostsRelations = relations(blogPosts, ({ many }) => ({
   comments: many(comments),
 }));
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+export const commentsRelations = relations(comments, ({ one, many }) => ({
   post: one(blogPosts, {
     fields: [comments.postId],
     references: [blogPosts.id],
   }),
+  parent: one(comments, {
+    fields: [comments.parentId],
+    references: [comments.id],
+  }),
+  replies: many(comments),
 }));
 
 // Zod schemas for validation
@@ -103,4 +109,8 @@ export type BlogPostWithAuthor = BlogPost & {
 
 export type StaffWithPosts = Staff & {
   blogPosts: BlogPost[];
+};
+
+export type CommentWithReplies = Comment & {
+  replies: Comment[];
 };
