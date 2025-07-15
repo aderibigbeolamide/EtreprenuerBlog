@@ -93,6 +93,7 @@ export function registerRoutes(app: Express): Server {
       
       res.json(post);
     } catch (error) {
+      console.error("Error fetching blog post:", error);
       res.status(500).json({ message: "Failed to fetch blog post" });
     }
   });

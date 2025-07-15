@@ -147,12 +147,21 @@ export class DatabaseStorage implements IStorage {
 
     if (!result) return undefined;
 
-    const postComments = await this.getCommentsByPostId(id);
-
-    return {
-      ...result,
-      comments: postComments
-    };
+    try {
+      const postComments = await this.getCommentsByPostId(id);
+      
+      return {
+        ...result,
+        comments: postComments
+      };
+    } catch (error) {
+      console.error("Error fetching comments for blog post:", error);
+      // Return post without comments if comment fetching fails
+      return {
+        ...result,
+        comments: []
+      };
+    }
   }
 
   async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
@@ -188,20 +197,26 @@ export class DatabaseStorage implements IStorage {
 
   // Comment methods
   async getCommentsByPostId(postId: number, parentId?: number): Promise<Comment[]> {
-    let conditions = [eq(comments.postId, postId), eq(comments.isApproved, true)];
-    
-    if (parentId !== undefined) {
-      conditions.push(eq(comments.parentId, parentId));
-    } else {
-      // Get only top-level comments (no parent)
-      conditions.push(isNull(comments.parentId));
+    try {
+      let conditions = [eq(comments.postId, postId), eq(comments.isApproved, true)];
+      
+      if (parentId !== undefined) {
+        conditions.push(eq(comments.parentId, parentId));
+      } else {
+        // Get only top-level comments (no parent)
+        conditions.push(isNull(comments.parentId));
+      }
+      
+      return await db
+        .select()
+        .from(comments)
+        .where(and(...conditions))
+        .orderBy(desc(comments.createdAt));
+    } catch (error) {
+      console.error("Error in getCommentsByPostId:", error);
+      // Return empty array if there's an error
+      return [];
     }
-    
-    return await db
-      .select()
-      .from(comments)
-      .where(and(...conditions))
-      .orderBy(desc(comments.createdAt));
   }
 
   async createComment(comment: InsertComment): Promise<Comment> {
