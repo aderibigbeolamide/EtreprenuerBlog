@@ -193,16 +193,22 @@ export default function BlogDetailPage() {
           <Card className="mb-8">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Video Content</h3>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {post.videoUrls.map((videoUrl, index) => (
-                  <div key={index} className="bg-gray-100 rounded-lg p-6 text-center">
-                    <Play className="h-10 w-10 text-primary mx-auto mb-3" />
-                    <p className="text-gray-600 text-sm mb-3">Video {index + 1}</p>
-                    <Button className="bg-primary hover:bg-blue-700">
-                      <Play className="mr-2 h-4 w-4" />
-                      Watch Video
-                    </Button>
-                    {/* In a real implementation, you would embed the actual video player here */}
+                  <div key={index} className="w-full">
+                    <div className="mb-2">
+                      <h4 className="text-sm font-medium text-gray-700">Video {index + 1}</h4>
+                    </div>
+                    <video
+                      controls
+                      className="w-full max-w-full h-auto rounded-lg shadow-lg"
+                      preload="metadata"
+                    >
+                      <source src={videoUrl} type="video/mp4" />
+                      <source src={videoUrl} type="video/webm" />
+                      <source src={videoUrl} type="video/ogg" />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                 ))}
               </div>

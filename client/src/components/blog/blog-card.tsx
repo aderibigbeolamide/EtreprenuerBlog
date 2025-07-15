@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ImageLightbox from "@/components/ui/image-lightbox";
-import { Calendar, User, Bot, ArrowRight } from "lucide-react";
+import { Calendar, User, Bot, ArrowRight, Play } from "lucide-react";
 import type { BlogPostWithAuthor } from "@shared/schema";
 
 interface BlogCardProps {
@@ -44,18 +44,34 @@ export default function BlogCard({ post }: BlogCardProps) {
     <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100">
       {/* Featured Image */}
       {post.imageUrls && post.imageUrls.length > 0 ? (
-        <img 
-          src={post.imageUrls[0]} 
-          alt={post.title}
-          className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => handleImageClick(0)}
-        />
+        <div className="relative">
+          <img 
+            src={post.imageUrls[0]} 
+            alt={post.title}
+            className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => handleImageClick(0)}
+          />
+          {/* Video indicator */}
+          {post.videoUrls && post.videoUrls.length > 0 && (
+            <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded-md text-xs flex items-center">
+              <Play className="h-3 w-3 mr-1" />
+              Video
+            </div>
+          )}
+        </div>
       ) : (
-        <div className="w-full h-48 bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center">
+        <div className="w-full h-48 bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center relative">
           <div className="text-white text-center">
             <div className="text-4xl mb-2">📝</div>
             <div className="text-sm">No Image</div>
           </div>
+          {/* Video indicator for posts without images */}
+          {post.videoUrls && post.videoUrls.length > 0 && (
+            <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded-md text-xs flex items-center">
+              <Play className="h-3 w-3 mr-1" />
+              Video
+            </div>
+          )}
         </div>
       )}
       

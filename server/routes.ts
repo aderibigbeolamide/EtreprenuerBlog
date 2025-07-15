@@ -59,6 +59,20 @@ export function registerRoutes(app: Express): Server {
   app.use('/uploads', (req, res, next) => {
     const filePath = path.join(uploadDir, req.path);
     if (fs.existsSync(filePath)) {
+      // Set appropriate MIME types for different file types
+      const ext = path.extname(filePath).toLowerCase();
+      if (ext === '.mp4') {
+        res.setHeader('Content-Type', 'video/mp4');
+      } else if (ext === '.webm') {
+        res.setHeader('Content-Type', 'video/webm');
+      } else if (ext === '.ogg') {
+        res.setHeader('Content-Type', 'video/ogg');
+      } else if (ext === '.avi') {
+        res.setHeader('Content-Type', 'video/x-msvideo');
+      } else if (ext === '.mov') {
+        res.setHeader('Content-Type', 'video/quicktime');
+      }
+      
       res.sendFile(filePath);
     } else {
       res.status(404).json({ message: "File not found" });
