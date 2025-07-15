@@ -187,21 +187,25 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.put("/api/admin/blog-posts/:id", requireAuth, upload.fields([
-    { name: 'image', maxCount: 1 },
-    { name: 'video', maxCount: 1 }
+    { name: 'images', maxCount: 10 },
+    { name: 'videos', maxCount: 5 }
   ]), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
       let updateData = { ...req.body };
+      let imageUrls: string[] = [];
+      let videoUrls: string[] = [];
       
-      if (files?.image?.[0]) {
-        updateData.imageUrl = `/uploads/${files.image[0].filename}`;
+      if (files?.images) {
+        imageUrls = files.images.map(file => `/uploads/${file.filename}`);
+        updateData.imageUrls = imageUrls.length > 0 ? imageUrls : null;
       }
       
-      if (files?.video?.[0]) {
-        updateData.videoUrl = `/uploads/${files.video[0].filename}`;
+      if (files?.videos) {
+        videoUrls = files.videos.map(file => `/uploads/${file.filename}`);
+        updateData.videoUrls = videoUrls.length > 0 ? videoUrls : null;
       }
 
       if (updateData.authorId) {

@@ -11,6 +11,7 @@ import Footer from "@/components/layout/footer";
 import BlogForm from "@/components/admin/blog-form";
 import BlogManagement from "@/components/admin/blog-management";
 import StaffForm from "@/components/admin/staff-form";
+import StaffManagement from "@/components/admin/staff-management";
 import { 
   PlusCircle, 
   FileText, 
@@ -316,62 +317,35 @@ export default function AdminDashboard() {
 
           {/* Staff Management Tab */}
           <TabsContent value="staff" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Staff Management</h2>
-              <Button className="bg-primary hover:bg-blue-700">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Staff Member
-              </Button>
-            </div>
+            <StaffManagement />
+          </TabsContent>
 
-            {staffLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map(i => (
-                  <Card key={i}>
-                    <CardContent className="p-6">
-                      <div className="animate-pulse text-center">
-                        <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4" />
-                        <div className="h-4 bg-gray-200 rounded mb-2" />
-                        <div className="h-3 bg-gray-200 rounded" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : staff && staff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {staff.map((member) => (
-                  <Card key={member.id}>
-                    <CardContent className="p-6 text-center">
-                      {member.imageUrl ? (
-                        <img 
-                          src={member.imageUrl} 
-                          alt={member.name}
-                          className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
-                        />
-                      ) : (
-                        <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                          <Users className="h-8 w-8 text-gray-400" />
-                        </div>
-                      )}
-                      <h3 className="font-semibold text-gray-900 mb-1">{member.name}</h3>
-                      <p className="text-primary font-medium text-sm mb-2">{member.role}</p>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{member.bio}</p>
-                      <div className="flex justify-center space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-12 text-center">
+          {/* Add Staff Tab */}
+          <TabsContent value="add-staff" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Add Staff Member</h2>
+              <p className="text-gray-600">Add a new team member to your organization.</p>
+            </div>
+            <StaffForm />
+          </TabsContent>
+
+          {/* Manage Staff Tab */}
+          <TabsContent value="manage-staff" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Manage Staff</h2>
+              <p className="text-gray-600">Edit and delete staff members.</p>
+            </div>
+            <StaffManagement />
+          </TabsContent>
+
+          {/* Legacy Staff Tab (to be removed) */}
+          <TabsContent value="legacy-staff" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Legacy Staff View</h2>
+              <p className="text-gray-600">This view will be removed.</p>
+            </div>
+            <Card>
+              <CardContent className="p-12 text-center">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No staff members yet</h3>
                   <p className="text-gray-600 mb-4">Add your first team member to get started</p>
@@ -381,12 +355,6 @@ export default function AdminDashboard() {
                   </Button>
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
-
-          {/* Add Staff Tab */}
-          <TabsContent value="add-staff" className="space-y-6">
-            <StaffForm />
           </TabsContent>
         </Tabs>
       </div>

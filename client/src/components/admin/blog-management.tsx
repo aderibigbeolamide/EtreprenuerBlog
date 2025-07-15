@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { Edit, Trash2, Eye, Calendar, Bot, Plus, Search, Filter } from "lucide-react";
+import { Edit, Trash2, Eye, Calendar, Bot, Plus, Search, Filter, Upload, X, Image, Video } from "lucide-react";
 import type { BlogPost, Staff } from "@shared/schema";
 
 export default function BlogManagement() {
@@ -29,6 +29,8 @@ export default function BlogManagement() {
     isPublished: false,
     isAiGenerated: false
   });
+  const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
+  const [editVideoFiles, setEditVideoFiles] = useState<File[]>([]);
 
   const { data: blogPosts, isLoading: postsLoading } = useQuery<BlogPost[]>({
     queryKey: ['/api/admin/blog-posts'],
@@ -83,6 +85,8 @@ export default function BlogManagement() {
       });
       setIsEditDialogOpen(false);
       setSelectedPost(null);
+      setEditImageFiles([]);
+      setEditVideoFiles([]);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/blog-posts'] });
       queryClient.invalidateQueries({ queryKey: ['/api/blog-posts'] });
     },
@@ -123,6 +127,16 @@ export default function BlogManagement() {
     formData.append('authorName', editFormData.authorName);
     formData.append('isPublished', editFormData.isPublished.toString());
     formData.append('isAiGenerated', editFormData.isAiGenerated.toString());
+
+    // Add image files
+    editImageFiles.forEach((file, index) => {
+      formData.append('images', file);
+    });
+
+    // Add video files
+    editVideoFiles.forEach((file, index) => {
+      formData.append('videos', file);
+    });
 
     updateMutation.mutate({ id: selectedPost.id, data: formData });
   };
@@ -343,6 +357,90 @@ export default function BlogManagement() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <Label htmlFor="images">Images</Label>
+              <div className="space-y-2">
+                <Input
+                  id="images"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setEditImageFiles(prev => [...prev, ...files]);
+                  }}
+                />
+                {editImageFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {editImageFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
+                        <Image className="h-4 w-4" />
+                        <span className="text-sm">{file.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditImageFiles(prev => prev.filter((_, i) => i !== index));
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {selectedPost?.imageUrls && (
+                  <div className="text-sm text-gray-600">
+                    Current images: {selectedPost.imageUrls.length} files
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Video Upload */}
+            <div>
+              <Label htmlFor="videos">Videos</Label>
+              <div className="space-y-2">
+                <Input
+                  id="videos"
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setEditVideoFiles(prev => [...prev, ...files]);
+                  }}
+                />
+                {editVideoFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {editVideoFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded">
+                        <Video className="h-4 w-4" />
+                        <span className="text-sm">{file.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditVideoFiles(prev => prev.filter((_, i) => i !== index));
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {selectedPost?.videoUrls && (
+                  <div className="text-sm text-gray-600">
+                    Current videos: {selectedPost.videoUrls.length} files
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="flex items-center justify-between">
