@@ -23,13 +23,13 @@ const upload = multer({
     }
   }),
   fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'image') {
+    if (file.fieldname === 'image' || file.fieldname === 'images') {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
         cb(new Error('Only image files are allowed for image uploads'));
       }
-    } else if (file.fieldname === 'video') {
+    } else if (file.fieldname === 'video' || file.fieldname === 'videos') {
       if (file.mimetype.startsWith('video/')) {
         cb(null, true);
       } else {
