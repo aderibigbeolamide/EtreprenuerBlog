@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import ImageLightbox from "@/components/ui/image-lightbox";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import CommentSection from "@/components/blog/comment-section";
@@ -14,6 +16,8 @@ import type { BlogPostWithAuthor } from "@shared/schema";
 export default function BlogDetailPage() {
   const { id } = useParams();
   const postId = parseInt(id || "0");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { data: post, isLoading, error } = useQuery<BlogPostWithAuthor>({
     queryKey: ['/api/blog-posts', postId],
@@ -83,6 +87,23 @@ export default function BlogDetailPage() {
     });
   };
 
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const handleNextImage = () => {
+    if (post && post.imageUrls && currentImageIndex < post.imageUrls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -109,7 +130,8 @@ export default function BlogDetailPage() {
                 <img
                   src={post.imageUrls[0]}
                   alt={post.title}
-                  className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
+                  className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => handleImageClick(0)}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,7 +140,8 @@ export default function BlogDetailPage() {
                       key={index}
                       src={imageUrl}
                       alt={`${post.title} - Image ${index + 1}`}
-                      className="w-full h-48 md:h-64 object-cover rounded-lg shadow-lg"
+                      className="w-full h-48 md:h-64 object-cover rounded-lg shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(index)}
                     />
                   ))}
                 </div>
@@ -192,6 +215,19 @@ export default function BlogDetailPage() {
         {/* Comments Section */}
         <CommentSection postId={post.id} />
       </article>
+
+      {/* Image Lightbox */}
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <ImageLightbox
+          images={post.imageUrls}
+          currentIndex={currentImageIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onNext={handleNextImage}
+          onPrevious={handlePreviousImage}
+          alt={post.title}
+        />
+      )}
 
       <Footer />
     </div>

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ImageLightbox from "@/components/ui/image-lightbox";
 import { Calendar, User, Bot, ArrowRight } from "lucide-react";
 import type { BlogPostWithAuthor } from "@shared/schema";
 
@@ -10,12 +12,32 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ post }: BlogCardProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const handleNextImage = () => {
+    if (post.imageUrls && currentImageIndex < post.imageUrls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
   };
 
   return (
@@ -25,7 +47,8 @@ export default function BlogCard({ post }: BlogCardProps) {
         <img 
           src={post.imageUrls[0]} 
           alt={post.title}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => handleImageClick(0)}
         />
       ) : (
         <div className="w-full h-48 bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center">
@@ -91,6 +114,19 @@ export default function BlogCard({ post }: BlogCardProps) {
           </Link>
         </div>
       </CardContent>
+
+      {/* Image Lightbox */}
+      {post.imageUrls && post.imageUrls.length > 0 && (
+        <ImageLightbox
+          images={post.imageUrls}
+          currentIndex={currentImageIndex}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          onNext={handleNextImage}
+          onPrevious={handlePreviousImage}
+          alt={post.title}
+        />
+      )}
     </Card>
   );
 }
