@@ -9,9 +9,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold mb-4">Centre of Entrepreneurship</h3>
+            <h4 className="text-orange-400 font-semibold mb-2">University of Abuja</h4>
             <p className="text-gray-300 mb-4 leading-relaxed">
-              Empowering innovation through AI-driven insights and comprehensive entrepreneurship education. 
-              Building the future of business, one startup at a time.
+              Leading entrepreneurship education and innovation in Nigeria. We empower the next generation 
+              of business leaders through cutting-edge research, practical training, and innovative thinking.
             </p>
             <div className="flex space-x-4">
               <Button size="sm" variant="ghost" className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2">
