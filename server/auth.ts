@@ -29,7 +29,7 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  const sessionSecret = process.env.SESSION_SECRET || "f08f3e8bedc3c7be55021bcf4db744783ca6e22005aad6ce45062b0a52577047";
+  const sessionSecret = process.env.SESSION_SECRET || "default-dev-session-secret-change-in-production-" + Date.now();
   
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret,
