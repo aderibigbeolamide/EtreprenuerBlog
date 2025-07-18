@@ -142,3 +142,12 @@ The application is designed for easy deployment on platforms like Replit, with a
 - Configured custom content generator as OpenAI alternative
 - Enhanced footer with University of Abuja identification
 - Updated statistics and metrics to reflect university context
+
+### January 18, 2025 - Cloudinary Media Storage Integration
+- Integrated Cloudinary for all media storage (images, videos, files)
+- Replaced local file storage with cloud-based CDN delivery
+- Added automatic image and video optimization
+- Organized media in structured folders (blog-posts, staff-images, uploads)
+- Created dedicated upload endpoints for images and videos
+- Updated all file upload workflows to use Cloudinary
+- Enhanced deployment readiness with production-grade media storage

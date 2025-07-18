@@ -1,48 +1,19 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertBlogPostSchema, insertCommentSchema, insertStaffSchema } from "@shared/schema";
 import { generateBlogContent, analyzeImage } from "./openai";
-
-// Configure multer for file uploads
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadDir,
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-  }),
-  fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'image' || file.fieldname === 'images') {
-      if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only image files are allowed for image uploads'));
-      }
-    } else if (file.fieldname === 'video' || file.fieldname === 'videos') {
-      if (file.mimetype.startsWith('video/')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only video files are allowed for video uploads'));
-      }
-    } else {
-      cb(new Error('Invalid field name'));
-    }
-  },
-  limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB limit
-  }
-});
+import { 
+  upload, 
+  uploadToCloudinary, 
+  uploadMultipleToCloudinary, 
+  deleteFromCloudinary,
+  getOptimizedImageUrl,
+  getOptimizedVideoUrl 
+} from "./cloudinary";
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.isAuthenticated()) {
@@ -176,12 +147,22 @@ export function registerRoutes(app: Express): Server {
       let imageUrls: string[] = [];
       let videoUrls: string[] = [];
       
-      if (files?.images) {
-        imageUrls = files.images.map(file => `/uploads/${file.filename}`);
+      // Upload images to Cloudinary
+      if (files?.images && files.images.length > 0) {
+        const imageUploads = await uploadMultipleToCloudinary(files.images, {
+          folder: 'blog-posts/images',
+          resource_type: 'image'
+        });
+        imageUrls = imageUploads.map(upload => upload.secure_url);
       }
       
-      if (files?.videos) {
-        videoUrls = files.videos.map(file => `/uploads/${file.filename}`);
+      // Upload videos to Cloudinary
+      if (files?.videos && files.videos.length > 0) {
+        const videoUploads = await uploadMultipleToCloudinary(files.videos, {
+          folder: 'blog-posts/videos',
+          resource_type: 'video'
+        });
+        videoUrls = videoUploads.map(upload => upload.secure_url);
       }
 
       const postData = insertBlogPostSchema.parse({
@@ -209,17 +190,23 @@ export function registerRoutes(app: Express): Server {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
       let updateData = { ...req.body };
-      let imageUrls: string[] = [];
-      let videoUrls: string[] = [];
       
-      if (files?.images) {
-        imageUrls = files.images.map(file => `/uploads/${file.filename}`);
-        updateData.imageUrls = imageUrls.length > 0 ? imageUrls : null;
+      // Upload new images to Cloudinary if provided
+      if (files?.images && files.images.length > 0) {
+        const imageUploads = await uploadMultipleToCloudinary(files.images, {
+          folder: 'blog-posts/images',
+          resource_type: 'image'
+        });
+        updateData.imageUrls = imageUploads.map(upload => upload.secure_url);
       }
       
-      if (files?.videos) {
-        videoUrls = files.videos.map(file => `/uploads/${file.filename}`);
-        updateData.videoUrls = videoUrls.length > 0 ? videoUrls : null;
+      // Upload new videos to Cloudinary if provided
+      if (files?.videos && files.videos.length > 0) {
+        const videoUploads = await uploadMultipleToCloudinary(files.videos, {
+          folder: 'blog-posts/videos',
+          resource_type: 'video'
+        });
+        updateData.videoUrls = videoUploads.map(upload => upload.secure_url);
       }
 
       if (updateData.authorId) {
@@ -273,8 +260,8 @@ export function registerRoutes(app: Express): Server {
       let imageBase64: string | undefined;
       
       if (req.file) {
-        const imageBuffer = fs.readFileSync(req.file.path);
-        imageBase64 = imageBuffer.toString('base64');
+        // Use the file buffer directly from memory storage
+        imageBase64 = req.file.buffer.toString('base64');
       }
 
       const generatedContent = await generateBlogContent(headline, imageBase64);
@@ -292,7 +279,12 @@ export function registerRoutes(app: Express): Server {
       let imageUrl = req.body.imageUrl || null;
       
       if (req.file) {
-        imageUrl = `/uploads/${req.file.filename}`;
+        // Upload staff image to Cloudinary
+        const uploadResult = await uploadToCloudinary(req.file.buffer, {
+          folder: 'staff-images',
+          resource_type: 'image'
+        });
+        imageUrl = uploadResult.secure_url;
       }
 
       const staffData = insertStaffSchema.parse({
@@ -314,7 +306,12 @@ export function registerRoutes(app: Express): Server {
       let updateData = { ...req.body };
       
       if (req.file) {
-        updateData.imageUrl = `/uploads/${req.file.filename}`;
+        // Upload updated staff image to Cloudinary
+        const uploadResult = await uploadToCloudinary(req.file.buffer, {
+          folder: 'staff-images',
+          resource_type: 'image'
+        });
+        updateData.imageUrl = uploadResult.secure_url;
       }
 
       const staff = await storage.updateStaff(id, updateData);
@@ -372,6 +369,51 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "Comment deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // File upload endpoints for Cloudinary
+  app.post("/api/admin/upload-image", requireAuth, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const uploadResult = await uploadToCloudinary(req.file.buffer, {
+        folder: 'uploads/images',
+        resource_type: 'image'
+      });
+
+      res.json({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        optimizedUrl: getOptimizedImageUrl(uploadResult.public_id)
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  app.post("/api/admin/upload-video", requireAuth, upload.single('video'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file provided" });
+      }
+
+      const uploadResult = await uploadToCloudinary(req.file.buffer, {
+        folder: 'uploads/videos',
+        resource_type: 'video'
+      });
+
+      res.json({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        optimizedUrl: getOptimizedVideoUrl(uploadResult.public_id)
+      });
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      res.status(500).json({ message: "Failed to upload video" });
     }
   });
 

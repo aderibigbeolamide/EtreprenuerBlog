@@ -12,6 +12,11 @@ DATABASE_URL=postgresql://username:password@host:port/database
 SESSION_SECRET=your-super-secure-32-character-secret
 NODE_ENV=production
 PORT=5000
+
+# Cloudinary (for media storage)
+CLOUDINARY_CLOUD_NAME=dgsxskcmd
+CLOUDINARY_API_KEY=275965937962349
+CLOUDINARY_API_SECRET=YmzagfndSNtvT3ntNN42DnhxRyg
 ```
 
 ### Optional (for AI features):
