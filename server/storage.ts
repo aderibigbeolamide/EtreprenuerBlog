@@ -64,7 +64,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
+    for (const user of Array.from(this.users.values())) {
       if (user.username === username) {
         return user;
       }
@@ -76,7 +76,7 @@ export class MemStorage implements IStorage {
     const user: User = {
       id: this.userIdCounter++,
       ...insertUser,
-      role: insertUser.role || 'admin'
+      role: 'admin'
     };
     this.users.set(user.id, user);
     return user;
@@ -95,6 +95,9 @@ export class MemStorage implements IStorage {
     const staff: Staff = {
       id: this.staffIdCounter++,
       ...staffData,
+      imageUrl: staffData.imageUrl ?? null,
+      email: staffData.email ?? null,
+      linkedinUrl: staffData.linkedinUrl ?? null,
       isActive: true
     };
     this.staff.set(staff.id, staff);
@@ -164,6 +167,10 @@ export class MemStorage implements IStorage {
     const blogPost: BlogPost = {
       id: this.blogPostIdCounter++,
       ...post,
+      imageUrls: post.imageUrls ?? null,
+      videoUrls: post.videoUrls ?? null,
+      isPublished: post.isPublished ?? false,
+      isAiGenerated: post.isAiGenerated ?? false,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -200,6 +207,7 @@ export class MemStorage implements IStorage {
     const newComment: Comment = {
       id: this.commentIdCounter++,
       ...comment,
+      parentId: comment.parentId ?? null,
       isApproved: true,
       createdAt: new Date()
     };
