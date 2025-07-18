@@ -32,7 +32,7 @@ export default function HomePage() {
       
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 to-blue-700 text-white py-24 lg:py-32">
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div 
           style={{
             backgroundImage: `url(${universityImage})`,
@@ -46,23 +46,23 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
-            <div className="text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <div className="text-left bg-black/40 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
                 Centre of Entrepreneurship
-                <span className="text-orange-400 block mt-2"> University of Abuja</span>
+                <span className="text-orange-300 block mt-2 drop-shadow-lg"> University of Abuja</span>
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
-                Fostering innovation, nurturing entrepreneurs, and building the future of business in Nigeria through cutting-edge research and AI-powered insights.
+              <p className="text-xl md:text-2xl mb-8 text-gray-100 leading-relaxed drop-shadow-md">
+                Fostering innovation, nurturing entrepreneurs, and building the future of business in Nigeria through cutting-edge research and modern insights.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/blog">
-                  <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg">
+                  <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white shadow-xl border-2 border-orange-400">
                     <BookOpen className="mr-2 h-5 w-5" />
                     Explore Our Insights
                   </Button>
                 </Link>
                 <Link href="/staff">
-                  <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20">
+                  <Button size="lg" variant="outline" className="bg-white/20 backdrop-blur border-2 border-white/40 text-white hover:bg-white/30 shadow-xl">
                     <Users className="mr-2 h-5 w-5" />
                     Meet Our Experts
                   </Button>
