@@ -42,6 +42,188 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
+export class MemStorage implements IStorage {
+  private users: Map<number, User> = new Map();
+  private staff: Map<number, Staff> = new Map();
+  private blogPosts: Map<number, BlogPost> = new Map();
+  private comments: Map<number, Comment> = new Map();
+  private userIdCounter = 1;
+  private staffIdCounter = 1;
+  private blogPostIdCounter = 1;
+  private commentIdCounter = 1;
+
+  sessionStore: session.Store;
+
+  constructor() {
+    this.sessionStore = new session.MemoryStore();
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    for (const user of this.users.values()) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const user: User = {
+      id: this.userIdCounter++,
+      ...insertUser,
+      role: insertUser.role || 'admin'
+    };
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  // Staff methods
+  async getAllStaff(): Promise<Staff[]> {
+    return Array.from(this.staff.values()).filter(s => s.isActive);
+  }
+
+  async getStaffById(id: number): Promise<Staff | undefined> {
+    return this.staff.get(id);
+  }
+
+  async createStaff(staffData: InsertStaff): Promise<Staff> {
+    const staff: Staff = {
+      id: this.staffIdCounter++,
+      ...staffData,
+      isActive: true
+    };
+    this.staff.set(staff.id, staff);
+    return staff;
+  }
+
+  async updateStaff(id: number, staffData: Partial<InsertStaff>): Promise<Staff | undefined> {
+    const existing = this.staff.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Staff = {
+      ...existing,
+      ...staffData,
+      isActive: staffData.isActive ?? existing.isActive
+    };
+    this.staff.set(id, updated);
+    return updated;
+  }
+
+  async deleteStaff(id: number): Promise<boolean> {
+    const existing = this.staff.get(id);
+    if (!existing) return false;
+    
+    this.staff.set(id, { ...existing, isActive: false });
+    return true;
+  }
+
+  // Blog post methods
+  async getAllBlogPosts(filters?: { search?: string; authorName?: string; published?: boolean }): Promise<BlogPostWithAuthor[]> {
+    let posts = Array.from(this.blogPosts.values());
+    
+    if (filters?.published !== undefined) {
+      posts = posts.filter(p => p.isPublished === filters.published);
+    }
+    
+    if (filters?.authorName) {
+      posts = posts.filter(p => p.authorName.toLowerCase().includes(filters.authorName!.toLowerCase()));
+    }
+    
+    if (filters?.search) {
+      posts = posts.filter(p => 
+        p.title.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        p.content.toLowerCase().includes(filters.search!.toLowerCase())
+      );
+    }
+    
+    posts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    
+    return posts.map(post => ({
+      ...post,
+      comments: Array.from(this.comments.values()).filter(c => c.postId === post.id)
+    }));
+  }
+
+  async getBlogPostById(id: number): Promise<BlogPostWithAuthor | undefined> {
+    const post = this.blogPosts.get(id);
+    if (!post) return undefined;
+    
+    const comments = Array.from(this.comments.values()).filter(c => c.postId === id);
+    return {
+      ...post,
+      comments
+    };
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const blogPost: BlogPost = {
+      id: this.blogPostIdCounter++,
+      ...post,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.blogPosts.set(blogPost.id, blogPost);
+    return blogPost;
+  }
+
+  async updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const existing = this.blogPosts.get(id);
+    if (!existing) return undefined;
+    
+    const updated: BlogPost = {
+      ...existing,
+      ...post,
+      updatedAt: new Date()
+    };
+    this.blogPosts.set(id, updated);
+    return updated;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    return this.blogPosts.delete(id);
+  }
+
+  // Comment methods
+  async getCommentsByPostId(postId: number, parentId?: number): Promise<Comment[]> {
+    return Array.from(this.comments.values())
+      .filter(c => c.postId === postId && c.isApproved)
+      .filter(c => parentId !== undefined ? c.parentId === parentId : !c.parentId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const newComment: Comment = {
+      id: this.commentIdCounter++,
+      ...comment,
+      isApproved: true,
+      createdAt: new Date()
+    };
+    this.comments.set(newComment.id, newComment);
+    return newComment;
+  }
+
+  async updateComment(id: number, comment: Partial<InsertComment>): Promise<Comment | undefined> {
+    const existing = this.comments.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Comment = {
+      ...existing,
+      ...comment
+    };
+    this.comments.set(id, updated);
+    return updated;
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    return this.comments.delete(id);
+  }
+}
+
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
@@ -245,4 +427,20 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Create storage instance based on database availability
+let storage: IStorage;
+
+try {
+  // Try to use DatabaseStorage if DATABASE_URL is available
+  if (process.env.DATABASE_URL) {
+    storage = new DatabaseStorage();
+  } else {
+    throw new Error("No DATABASE_URL provided");
+  }
+} catch (error) {
+  console.warn("Database not available, using in-memory storage:", (error as Error).message);
+  // Fallback to memory storage if database is not available
+  storage = new MemStorage();
+}
+
+export { storage };
