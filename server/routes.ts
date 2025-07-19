@@ -22,6 +22,26 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+function requireAdminAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  if (req.user.role !== 'admin' || !req.user.isApproved) {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+}
+
+function requireApprovedAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  if (!req.user.isApproved) {
+    return res.status(403).json({ message: "Account pending approval" });
+  }
+  next();
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   await setupAuth(app);
@@ -126,8 +146,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management routes (admin only)
+  app.get("/api/admin/users", requireAdminAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const users = await storage.getAllUsers();
+      // Don't send passwords in response
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        isApproved: user.isApproved,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put("/api/admin/users/:id/approve", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const storage = await getStorage();
+      const user = await storage.approveUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't send password in response
+      const safeUser = {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        isApproved: user.isApproved,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      res.json(safeUser);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const storage = await getStorage();
+      
+      // Prevent deleting the seed admin
+      const user = await storage.getUser(id);
+      if (user && user.username === 'admin') {
+        return res.status(403).json({ message: "Cannot delete seed admin user" });
+      }
+      
+      const success = await storage.deleteUser(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Admin-only routes
-  app.get("/api/admin/blog-posts", requireAuth, async (req, res) => {
+  app.get("/api/admin/blog-posts", requireAdminAuth, async (req, res) => {
     try {
       const { search, authorName } = req.query;
       const filters = {
@@ -144,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/blog-posts", requireAuth, upload.fields([
+  app.post("/api/admin/blog-posts", requireAdminAuth, upload.fields([
     { name: 'images', maxCount: 10 },
     { name: 'videos', maxCount: 5 }
   ]), async (req, res) => {
@@ -188,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/blog-posts/:id", requireAuth, upload.fields([
+  app.put("/api/admin/blog-posts/:id", requireAdminAuth, upload.fields([
     { name: 'images', maxCount: 10 },
     { name: 'videos', maxCount: 5 }
   ]), async (req, res) => {
@@ -241,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/blog-posts/:id", requireAuth, async (req, res) => {
+  app.delete("/api/admin/blog-posts/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const storage = await getStorage();
@@ -258,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI content generation
-  app.post("/api/admin/generate-content", requireAuth, upload.single('image'), async (req, res) => {
+  app.post("/api/admin/generate-content", requireAdminAuth, upload.single('image'), async (req, res) => {
     try {
       const { headline } = req.body;
       
@@ -283,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Staff management (admin only)
-  app.post("/api/admin/staff", requireAuth, upload.single('image'), async (req, res) => {
+  app.post("/api/admin/staff", requireAdminAuth, upload.single('image'), async (req, res) => {
     try {
       let imageUrl = req.body.imageUrl || null;
       
@@ -310,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/staff/:id", requireAuth, upload.single('image'), async (req, res) => {
+  app.put("/api/admin/staff/:id", requireAdminAuth, upload.single('image'), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       let updateData = { ...req.body };
@@ -337,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/staff/:id", requireAuth, async (req, res) => {
+  app.delete("/api/admin/staff/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const storage = await getStorage();
@@ -354,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comment moderation (admin only)
-  app.put("/api/admin/comments/:id", requireAuth, async (req, res) => {
+  app.put("/api/admin/comments/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const storage = await getStorage();
@@ -370,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/comments/:id", requireAuth, async (req, res) => {
+  app.delete("/api/admin/comments/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const storage = await getStorage();
@@ -387,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload endpoints for Cloudinary
-  app.post("/api/admin/upload-image", requireAuth, upload.single('image'), async (req, res) => {
+  app.post("/api/admin/upload-image", requireAdminAuth, upload.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
@@ -409,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/upload-video", requireAuth, upload.single('video'), async (req, res) => {
+  app.post("/api/admin/upload-video", requireAdminAuth, upload.single('video'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No video file provided" });

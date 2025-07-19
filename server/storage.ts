@@ -18,6 +18,10 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  approveUser(id: number): Promise<User | undefined>;
 
   // Staff methods
   getAllStaff(): Promise<Staff[]>;
@@ -76,10 +80,46 @@ export class MemStorage implements IStorage {
     const user: User = {
       id: this.userIdCounter++,
       ...insertUser,
-      role: 'admin'
+      isApproved: insertUser.role === 'admin' ? true : false,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(user.id, user);
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const existing = this.users.get(id);
+    if (!existing) return undefined;
+    
+    const updated: User = {
+      ...existing,
+      ...userData,
+      updatedAt: new Date()
+    };
+    this.users.set(id, updated);
+    return updated;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  async approveUser(id: number): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updated: User = {
+      ...user,
+      isApproved: true,
+      updatedAt: new Date()
+    };
+    this.users.set(id, updated);
+    return updated;
   }
 
   // Staff methods
@@ -265,6 +305,42 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...userData, 
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const [deleted] = await db
+      .delete(users)
+      .where(eq(users.id, id))
+      .returning();
+    return !!deleted;
+  }
+
+  async approveUser(id: number): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        isApproved: true, 
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   // Staff methods

@@ -55,6 +55,8 @@ export async function setupAuth(app: Express) {
       const user = await storage.getUserByUsername(username);
       if (!user || !(await comparePasswords(password, user.password))) {
         return done(null, false);
+      } else if (!user.isApproved && user.role !== 'admin') {
+        return done(null, false, { message: 'Account pending approval' });
       } else {
         return done(null, user);
       }
@@ -72,7 +74,7 @@ export async function setupAuth(app: Express) {
     const storage = await getStorage();
     const existingUser = await storage.getUserByUsername(req.body.username);
     if (existingUser) {
-      return res.status(400).send("Username already exists");
+      return res.status(400).json({ message: "Username already exists" });
     }
 
     const user = await storage.createUser({
@@ -80,10 +82,32 @@ export async function setupAuth(app: Express) {
       password: await hashPassword(req.body.password),
     });
 
-    req.login(user, (err) => {
-      if (err) return next(err);
-      res.status(201).json(user);
-    });
+    // Only auto-login admin users or approved users
+    if (user.role === 'admin' || user.isApproved) {
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.status(201).json({ 
+          message: "Registration successful", 
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            isApproved: user.isApproved
+          }
+        });
+      });
+    } else {
+      // Don't auto-login, return success message
+      res.status(201).json({ 
+        message: "Registration successful. Your account is pending approval from an administrator.",
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          isApproved: user.isApproved
+        }
+      });
+    }
   });
 
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {

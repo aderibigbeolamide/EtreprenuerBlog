@@ -29,11 +29,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-3">
             <Link href="/">
-              <h1 className="text-xl font-bold text-primary cursor-pointer">
-                Centre of Entrepreneurship
-              </h1>
+              <div className="flex items-center space-x-3 cursor-pointer">
+                <img 
+                  src="/assets/uniabuja-logo.jpeg" 
+                  alt="University of Abuja Logo" 
+                  className="h-10 w-10 object-contain"
+                />
+                <h1 className="text-xl font-bold text-primary">
+                  Centre of Entrepreneurship
+                </h1>
+              </div>
             </Link>
           </div>
 

@@ -58,8 +58,8 @@ export default function AboutPage() {
             
             <div className="lg:text-right">
               <img 
-                src="https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="Modern university campus" 
+                src="/assets/uniabuja-senate-building.jpg" 
+                alt="University of Abuja Senate Building" 
                 className="rounded-xl shadow-2xl"
               />
             </div>

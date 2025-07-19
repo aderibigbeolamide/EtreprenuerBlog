@@ -12,6 +12,7 @@ import BlogForm from "@/components/admin/blog-form";
 import BlogManagement from "@/components/admin/blog-management";
 import StaffForm from "@/components/admin/staff-form";
 import StaffManagement from "@/components/admin/staff-management";
+import UserManagement from "@/components/admin/user-management";
 import { 
   PlusCircle, 
   FileText, 
@@ -75,13 +76,14 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="posts">Blog Posts</TabsTrigger>
             <TabsTrigger value="manage">Manage Posts</TabsTrigger>
             <TabsTrigger value="create">Create Post</TabsTrigger>
             <TabsTrigger value="staff">Staff</TabsTrigger>
             <TabsTrigger value="add-staff">Add Staff</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -338,23 +340,13 @@ export default function AdminDashboard() {
             <StaffManagement />
           </TabsContent>
 
-          {/* Legacy Staff Tab (to be removed) */}
-          <TabsContent value="legacy-staff" className="space-y-6">
+          {/* User Management Tab */}
+          <TabsContent value="users" className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Legacy Staff View</h2>
-              <p className="text-gray-600">This view will be removed.</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">User Management</h2>
+              <p className="text-gray-600">Approve and manage user registrations.</p>
             </div>
-            <Card>
-              <CardContent className="p-12 text-center">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No staff members yet</h3>
-                  <p className="text-gray-600 mb-4">Add your first team member to get started</p>
-                  <Button className="bg-primary hover:bg-blue-700">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add First Member
-                  </Button>
-                </CardContent>
-              </Card>
+            <UserManagement />
           </TabsContent>
         </Tabs>
       </div>
