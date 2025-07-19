@@ -27,8 +27,7 @@ async function seedAdmin() {
     const hashedPassword = await hashPassword(adminPassword);
     const adminUser = await storage.createUser({
       username: adminUsername,
-      password: hashedPassword,
-      role: "admin"
+      password: hashedPassword
     });
     
     console.log(`Admin user created successfully: ${adminUser.username}`);
