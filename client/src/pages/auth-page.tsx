@@ -36,42 +36,42 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-blue-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
         {/* Hero Section */}
-        <div className="text-white space-y-6 lg:pr-8">
+        <div className="text-white space-y-4 sm:space-y-6 lg:pr-8 text-center lg:text-left">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               Centre of Entrepreneurship
             </h1>
-            <p className="text-xl text-blue-100 mb-6">
+            <p className="text-lg sm:text-xl text-blue-100 mb-4 sm:mb-6">
               AI-Powered Content Management Platform
             </p>
-            <p className="text-blue-200 leading-relaxed">
+            <p className="text-blue-200 leading-relaxed text-sm sm:text-base">
               Access our advanced admin dashboard to create and manage AI-generated blog content, 
               oversee staff information, and engage with our entrepreneurship community.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white bg-opacity-10 rounded-lg p-4">
-              <Bot className="h-8 w-8 text-accent mb-2" />
-              <h3 className="font-semibold mb-1">AI Content Generation</h3>
-              <p className="text-sm text-blue-200">Create comprehensive blog posts from headlines and images</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-white bg-opacity-10 rounded-lg p-3 sm:p-4">
+              <Bot className="h-6 sm:h-8 w-6 sm:w-8 text-accent mb-2 mx-auto lg:mx-0" />
+              <h3 className="font-semibold mb-1 text-sm sm:text-base">AI Content Generation</h3>
+              <p className="text-xs sm:text-sm text-blue-200">Create comprehensive blog posts from headlines and images</p>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4">
-              <Users className="h-8 w-8 text-accent mb-2" />
-              <h3 className="font-semibold mb-1">Staff Management</h3>
-              <p className="text-sm text-blue-200">Manage team profiles and showcase expertise</p>
+            <div className="bg-white bg-opacity-10 rounded-lg p-3 sm:p-4">
+              <Users className="h-6 sm:h-8 w-6 sm:w-8 text-accent mb-2 mx-auto lg:mx-0" />
+              <h3 className="font-semibold mb-1 text-sm sm:text-base">Staff Management</h3>
+              <p className="text-xs sm:text-sm text-blue-200">Manage team profiles and showcase expertise</p>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4">
-              <TrendingUp className="h-8 w-8 text-accent mb-2" />
-              <h3 className="font-semibold mb-1">Analytics Dashboard</h3>
-              <p className="text-sm text-blue-200">Track content performance and engagement</p>
+            <div className="bg-white bg-opacity-10 rounded-lg p-3 sm:p-4">
+              <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-accent mb-2 mx-auto lg:mx-0" />
+              <h3 className="font-semibold mb-1 text-sm sm:text-base">Analytics Dashboard</h3>
+              <p className="text-xs sm:text-sm text-blue-200">Track content performance and engagement</p>
             </div>
-            <div className="bg-white bg-opacity-10 rounded-lg p-4">
-              <ShieldQuestion className="h-8 w-8 text-accent mb-2" />
-              <h3 className="font-semibold mb-1">Secure Access</h3>
-              <p className="text-sm text-blue-200">Protected admin area with role-based permissions</p>
+            <div className="bg-white bg-opacity-10 rounded-lg p-3 sm:p-4">
+              <ShieldQuestion className="h-6 sm:h-8 w-6 sm:w-8 text-accent mb-2 mx-auto lg:mx-0" />
+              <h3 className="font-semibold mb-1 text-sm sm:text-base">Secure Access</h3>
+              <p className="text-xs sm:text-sm text-blue-200">Protected admin area with role-based permissions</p>
             </div>
           </div>
         </div>

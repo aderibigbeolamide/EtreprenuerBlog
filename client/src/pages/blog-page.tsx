@@ -37,13 +37,13 @@ export default function BlogPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-blue-700 text-white py-16">
+      <section className="bg-gradient-to-r from-primary to-blue-700 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               Entrepreneurship Insights
             </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto px-4">
               Discover AI-generated content covering the latest trends, strategies, and innovations 
               in the world of entrepreneurship and business development.
             </p>
@@ -52,9 +52,9 @@ export default function BlogPage() {
       </section>
 
       {/* Search and Filter */}
-      <section className="py-8 bg-gray-50 border-b">
+      <section className="py-6 sm:py-8 bg-gray-50 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
@@ -65,9 +65,9 @@ export default function BlogPage() {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Select value={selectedAuthor} onValueChange={setSelectedAuthor}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="All Authors" />
                 </SelectTrigger>
                 <SelectContent>

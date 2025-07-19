@@ -111,21 +111,22 @@ export default function UserManagement() {
             No users found.
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Username</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Registered</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Username</TableHead>
+                  <TableHead className="hidden sm:table-cell">Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Registered</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}
                     </Badge>
@@ -135,30 +136,31 @@ export default function UserManagement() {
                       {user.isApproved ? (
                         <>
                           <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-green-600">Approved</span>
+                          <span className="text-green-600 text-sm">Approved</span>
                         </>
                       ) : (
                         <>
                           <Clock className="h-4 w-4 text-yellow-500" />
-                          <span className="text-yellow-600">Pending</span>
+                          <span className="text-yellow-600 text-sm">Pending</span>
                         </>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       {!user.isApproved && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleApproveUser(user.id)}
                           disabled={approveUserMutation.isPending}
+                          className="text-xs"
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
+                          <CheckCircle className="h-3 w-3 sm:mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
                         </Button>
                       )}
                       
@@ -169,9 +171,10 @@ export default function UserManagement() {
                               size="sm"
                               variant="destructive"
                               onClick={() => setDeletingUserId(user.id)}
+                              className="text-xs"
                             >
-                              <UserMinus className="h-4 w-4 mr-1" />
-                              Delete
+                              <UserMinus className="h-3 w-3 sm:mr-1" />
+                              <span className="hidden sm:inline">Delete</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -202,7 +205,8 @@ export default function UserManagement() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

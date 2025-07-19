@@ -48,7 +48,7 @@ export default function BlogCard({ post }: BlogCardProps) {
           <img 
             src={post.imageUrls[0]} 
             alt={post.title}
-            className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-full h-40 sm:h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => handleImageClick(0)}
           />
           {/* Video indicator */}
@@ -60,10 +60,10 @@ export default function BlogCard({ post }: BlogCardProps) {
           )}
         </div>
       ) : (
-        <div className="w-full h-48 bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center relative">
+        <div className="w-full h-40 sm:h-48 bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center relative">
           <div className="text-white text-center">
-            <div className="text-4xl mb-2">📝</div>
-            <div className="text-sm">No Image</div>
+            <div className="text-3xl sm:text-4xl mb-2">📝</div>
+            <div className="text-xs sm:text-sm">No Image</div>
           </div>
           {/* Video indicator for posts without images */}
           {post.videoUrls && post.videoUrls.length > 0 && (
@@ -75,35 +75,37 @@ export default function BlogCard({ post }: BlogCardProps) {
         </div>
       )}
       
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         {/* Post Meta */}
-        <div className="flex items-center text-sm text-gray-500 mb-3">
+        <div className="flex flex-wrap items-center text-sm text-gray-500 mb-3 gap-2">
           {post.isAiGenerated && (
             <>
-              <Bot className="mr-2 h-3 w-3 text-accent" />
-              <Badge variant="secondary" className="bg-accent bg-opacity-10 text-accent text-xs font-medium mr-3">
+              <Bot className="h-3 w-3 text-accent" />
+              <Badge variant="secondary" className="bg-accent bg-opacity-10 text-accent text-xs font-medium">
                 AI Generated
               </Badge>
             </>
           )}
-          <Calendar className="mr-1 h-3 w-3" />
-          <span>{formatDate(post.createdAt)}</span>
+          <div className="flex items-center">
+            <Calendar className="mr-1 h-3 w-3" />
+            <span className="text-xs sm:text-sm">{formatDate(post.createdAt)}</span>
+          </div>
         </div>
 
         {/* Post Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary transition-colors line-clamp-2">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 hover:text-primary transition-colors line-clamp-2">
           <Link href={`/blog/${post.id}`} className="cursor-pointer">
             {post.title}
           </Link>
         </h3>
 
         {/* Post Excerpt */}
-        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed text-sm sm:text-base">
           {post.excerpt}
         </p>
 
         {/* Author and Read More */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center">
             {post.author?.imageUrl ? (
               <img 
@@ -123,7 +125,7 @@ export default function BlogCard({ post }: BlogCardProps) {
           </div>
           
           <Link href={`/blog/${post.id}`}>
-            <Button variant="ghost" size="sm" className="text-primary hover:text-blue-700 transition-colors">
+            <Button variant="ghost" size="sm" className="text-primary hover:text-blue-700 transition-colors w-full sm:w-auto text-sm">
               Read More
               <ArrowRight className="ml-1 h-3 w-3" />
             </Button>

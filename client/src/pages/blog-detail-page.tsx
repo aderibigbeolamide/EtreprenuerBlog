@@ -38,14 +38,14 @@ export default function BlogDetailPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-6" />
-            <div className="h-64 bg-gray-200 rounded-lg mb-6" />
+            <div className="h-6 sm:h-8 bg-gray-200 rounded mb-4 sm:mb-6" />
+            <div className="h-48 sm:h-64 bg-gray-200 rounded-lg mb-4 sm:mb-6" />
             <div className="h-4 bg-gray-200 rounded mb-2" />
             <div className="h-4 bg-gray-200 rounded mb-2" />
             <div className="h-4 bg-gray-200 rounded mb-2" />
-            <div className="h-32 bg-gray-200 rounded mb-6" />
+            <div className="h-24 sm:h-32 bg-gray-200 rounded mb-4 sm:mb-6" />
           </div>
         </div>
         <Footer />
@@ -57,18 +57,18 @@ export default function BlogDetailPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
             {error?.message === 'Blog post not found' ? 'Blog Post Not Found' : 'Error Loading Post'}
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base px-4">
             {error?.message === 'Blog post not found' 
               ? 'The blog post you are looking for does not exist or has been removed.'
               : 'There was an error loading the blog post. Please try again later.'
             }
           </p>
           <Link href="/blog">
-            <Button>
+            <Button className="w-full sm:w-auto">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Button>

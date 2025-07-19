@@ -57,16 +57,17 @@ export default function AdminDashboard() {
       
       {/* Dashboard Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back, {user?.username}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">Welcome back, {user?.username}</p>
             </div>
             <Button 
               variant="outline" 
               onClick={() => logoutMutation.mutate()}
               disabled={logoutMutation.isPending}
+              className="w-full sm:w-auto text-sm"
             >
               {logoutMutation.isPending ? "Signing out..." : "Sign Out"}
             </Button>
@@ -74,16 +75,16 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:grid-cols-7">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="posts">Blog Posts</TabsTrigger>
-            <TabsTrigger value="manage">Manage Posts</TabsTrigger>
-            <TabsTrigger value="create">Create Post</TabsTrigger>
-            <TabsTrigger value="staff">Staff</TabsTrigger>
-            <TabsTrigger value="add-staff">Add Staff</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 text-xs sm:text-sm overflow-x-auto">
+            <TabsTrigger value="overview" className="px-2 sm:px-3">Overview</TabsTrigger>
+            <TabsTrigger value="posts" className="px-2 sm:px-3">Posts</TabsTrigger>
+            <TabsTrigger value="manage" className="px-2 sm:px-3 hidden sm:block">Manage</TabsTrigger>
+            <TabsTrigger value="create" className="px-2 sm:px-3">Create</TabsTrigger>
+            <TabsTrigger value="staff" className="px-2 sm:px-3 hidden lg:block">Staff</TabsTrigger>
+            <TabsTrigger value="add-staff" className="px-2 sm:px-3 hidden lg:block">Add Staff</TabsTrigger>
+            <TabsTrigger value="users" className="px-2 sm:px-3 hidden lg:block">Users</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}

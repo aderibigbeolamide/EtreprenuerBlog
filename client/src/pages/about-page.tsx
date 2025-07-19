@@ -11,45 +11,45 @@ export default function AboutPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-20">
+      <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                 About the Centre of Entrepreneurship
               </h1>
-              <p className="text-xl text-blue-100 mb-6 leading-relaxed">
+              <p className="text-lg sm:text-xl text-blue-100 mb-4 sm:mb-6 leading-relaxed">
                 We are a leading research and education center dedicated to fostering innovation 
                 and entrepreneurial excellence through cutting-edge AI technologies and evidence-based practices.
               </p>
-              <p className="text-blue-100 mb-8 leading-relaxed">
+              <p className="text-blue-100 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base">
                 Our mission is to empower the next generation of entrepreneurs with the knowledge, 
                 tools, and insights needed to create sustainable, impactful businesses that solve 
                 real-world problems through innovation and technology.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">500+</div>
-                  <div className="text-sm text-blue-200">Startups Supported</div>
+                  <div className="text-xl sm:text-2xl font-bold text-accent">500+</div>
+                  <div className="text-xs sm:text-sm text-blue-200">Startups Supported</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">95%</div>
-                  <div className="text-sm text-blue-200">Success Rate</div>
+                  <div className="text-xl sm:text-2xl font-bold text-accent">95%</div>
+                  <div className="text-xs sm:text-sm text-blue-200">Success Rate</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">$50M+</div>
-                  <div className="text-sm text-blue-200">Funding Raised</div>
+                  <div className="text-xl sm:text-2xl font-bold text-accent">$50M+</div>
+                  <div className="text-xs sm:text-sm text-blue-200">Funding Raised</div>
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/contact">
-                  <Button className="bg-accent hover:bg-orange-600 text-white">
+                  <Button className="w-full sm:w-auto bg-accent hover:bg-orange-600 text-white">
                     Learn More
                   </Button>
                 </Link>
-                <Button variant="outline" className="bg-white bg-opacity-20 text-white hover:bg-opacity-30">
+                <Button variant="outline" className="w-full sm:w-auto bg-white bg-opacity-20 text-white hover:bg-opacity-30">
                   <Download className="mr-2 h-4 w-4" />
                   Download Brochure
                 </Button>
@@ -60,7 +60,7 @@ export default function AboutPage() {
               <img 
                 src="/assets/uniabuja-senate-building.jpg" 
                 alt="University of Abuja Senate Building" 
-                className="rounded-xl shadow-2xl"
+                className="w-full rounded-xl shadow-2xl"
               />
             </div>
           </div>

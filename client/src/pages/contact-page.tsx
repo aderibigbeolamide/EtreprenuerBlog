@@ -63,13 +63,13 @@ export default function ContactPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-blue-700 text-white py-16">
+      <section className="bg-gradient-to-r from-primary to-blue-700 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               Get in Touch
             </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto px-4">
               Ready to start your entrepreneurial journey? Contact our team for guidance, 
               partnerships, or to learn more about our AI-powered content platform.
             </p>

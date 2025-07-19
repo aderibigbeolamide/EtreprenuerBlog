@@ -31,7 +31,7 @@ export default function HomePage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-900 to-blue-700 text-white py-24 lg:py-32">
+      <section className="relative bg-gradient-to-br from-blue-900 to-blue-700 text-white py-16 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div 
           style={{
@@ -44,25 +44,25 @@ export default function HomePage() {
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Text Content */}
-            <div className="text-left bg-black/40 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
+            <div className="text-center lg:text-left bg-black/40 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-white/20">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight text-white drop-shadow-lg">
                 Centre of Entrepreneurship
-                <span className="text-orange-300 block mt-2 drop-shadow-lg"> University of Abuja</span>
+                <span className="text-orange-300 block mt-2 drop-shadow-lg text-2xl sm:text-3xl md:text-4xl lg:text-5xl"> University of Abuja</span>
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-gray-100 leading-relaxed drop-shadow-md">
+              <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 text-gray-100 leading-relaxed drop-shadow-md">
                 Fostering innovation, nurturing entrepreneurs, and building the future of business in Nigeria through cutting-edge research and modern insights.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/blog">
-                  <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white shadow-xl border-2 border-orange-400">
+                  <Button size="lg" className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white shadow-xl border-2 border-orange-400">
                     <BookOpen className="mr-2 h-5 w-5" />
                     Explore Our Insights
                   </Button>
                 </Link>
                 <Link href="/staff">
-                  <Button size="lg" variant="outline" className="bg-white/20 backdrop-blur border-2 border-white/40 text-white hover:bg-white/30 shadow-xl">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/20 backdrop-blur border-2 border-white/40 text-white hover:bg-white/30 shadow-xl">
                     <Users className="mr-2 h-5 w-5" />
                     Meet Our Experts
                   </Button>
@@ -98,43 +98,43 @@ export default function HomePage() {
       </section>
 
       {/* Featured Blog Posts */}
-      <section className="py-16 bg-white">
+      <section className="py-12 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Latest Entrepreneurship Insights
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
               Discover expert knowledge and innovative ideas from the University of Abuja's Centre of Entrepreneurship, 
               designed to inspire and guide aspiring entrepreneurs in Nigeria.
             </p>
           </div>
 
           {postsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="overflow-hidden">
-                  <div className="w-full h-48 bg-gray-200 animate-pulse" />
-                  <CardContent className="p-6">
+                  <div className="w-full h-40 sm:h-48 bg-gray-200 animate-pulse" />
+                  <CardContent className="p-4 sm:p-6">
                     <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
                     <div className="h-6 bg-gray-200 rounded animate-pulse mb-3" />
-                    <div className="h-16 bg-gray-200 rounded animate-pulse mb-4" />
+                    <div className="h-12 sm:h-16 bg-gray-200 rounded animate-pulse mb-4" />
                     <div className="h-4 bg-gray-200 rounded animate-pulse" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : featuredPosts && featuredPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {featuredPosts.map((post) => (
                 <BlogCard key={post.id} post={post} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <GraduationCap className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <div className="text-gray-500 mb-4">No blog posts available yet.</div>
-              <p className="text-sm text-gray-400">Check back soon for entrepreneurship insights!</p>
+            <div className="text-center py-8 sm:py-12">
+              <GraduationCap className="h-12 sm:h-16 w-12 sm:w-16 text-gray-300 mx-auto mb-4" />
+              <div className="text-gray-500 mb-4 text-sm sm:text-base">No blog posts available yet.</div>
+              <p className="text-xs sm:text-sm text-gray-400">Check back soon for entrepreneurship insights!</p>
             </div>
           )}
 
