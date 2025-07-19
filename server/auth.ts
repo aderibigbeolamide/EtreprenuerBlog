@@ -37,10 +37,10 @@ export async function setupAuth(app: Express) {
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: config.NODE_ENV === 'production',
+      secure: false, // Always false for local development
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax',
     },
   };
 
@@ -126,13 +126,6 @@ export async function setupAuth(app: Express) {
   });
 
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
-    console.log("🔍 Debug /api/auth/login success:");
-    console.log("  - Session ID:", req.sessionID || "No session ID");
-    console.log("  - Session data:", req.session || "No session");
-    console.log("  - User authenticated:", req.isAuthenticated());
-    console.log("  - Request cookies:", req.headers.cookie || "No cookies");
-    console.log("  - Request origin:", req.headers.origin || "No origin");
-    
     res.status(200).json(req.user);
   });
 
@@ -144,20 +137,7 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    console.log("🔍 Debug /api/user request:");
-    console.log("  - Session ID:", req.sessionID || "No session ID");
-    console.log("  - Session data:", req.session || "No session");
-    console.log("  - User authenticated:", req.isAuthenticated());
-    console.log("  - Request cookies:", req.headers.cookie || "No cookies");
-    console.log("  - Request origin:", req.headers.origin || "No origin");
-    console.log("  - User agent:", req.headers['user-agent'] || "No user agent");
-    
-    if (!req.isAuthenticated()) {
-      console.log("❌ User not authenticated, returning 401");
-      return res.sendStatus(401);
-    }
-    
-    console.log("✅ User authenticated, returning user data");
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
   });
 }

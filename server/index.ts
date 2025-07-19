@@ -18,6 +18,8 @@ app.use((req, res, next) => {
     'http://localhost:5000',
     'https://localhost:3000',
     'https://localhost:5000',
+    // Add current Replit domain
+    'https://232239f6-643b-42ad-b011-9cfccf40dc2d-00-2u71qsxdjeq5a.janeway.replit.dev'
   ];
   
   // Add Replit domain if available
