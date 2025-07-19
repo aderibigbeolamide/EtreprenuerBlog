@@ -174,7 +174,7 @@ export default function BlogForm() {
                       <p className="text-gray-600">
                         {videoFiles.length > 0 ? `${videoFiles.length} video(s) selected` : "Click to upload videos"}
                       </p>
-                      <p className="text-sm text-gray-500">MP4, MOV up to 50MB</p>
+                      <p className="text-sm text-gray-500">MP4, MOV, AVI, WEBM up to 100MB</p>
                     </label>
                     <input
                       id="video"

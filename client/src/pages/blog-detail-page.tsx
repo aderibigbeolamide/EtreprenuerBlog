@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ImageLightbox from "@/components/ui/image-lightbox";
+import VideoPlayer from "@/components/ui/video-player";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import CommentSection from "@/components/blog/comment-section";
@@ -190,30 +191,24 @@ export default function BlogDetailPage() {
 
         {/* Video Section */}
         {post.videoUrls && post.videoUrls.length > 0 && (
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Video Content</h3>
-              <div className="space-y-6">
-                {post.videoUrls.map((videoUrl, index) => (
-                  <div key={index} className="w-full">
-                    <div className="mb-2">
-                      <h4 className="text-sm font-medium text-gray-700">Video {index + 1}</h4>
-                    </div>
-                    <video
-                      controls
-                      className="w-full max-w-full h-auto rounded-lg shadow-lg"
-                      preload="metadata"
-                    >
-                      <source src={videoUrl} type="video/mp4" />
-                      <source src={videoUrl} type="video/webm" />
-                      <source src={videoUrl} type="video/ogg" />
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-6 flex items-center">
+              <Play className="mr-2 h-5 w-5 text-primary" />
+              Video Content
+            </h3>
+            <div className="space-y-6">
+              {post.videoUrls.map((videoUrl, index) => (
+                <VideoPlayer
+                  key={index}
+                  videoUrl={videoUrl}
+                  title={`${post.title} - Video ${index + 1}`}
+                  className="w-full"
+                  controls={true}
+                  muted={false}
+                />
+              ))}
+            </div>
+          </div>
         )}
 
         <Separator className="my-8" />

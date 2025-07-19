@@ -30,7 +30,7 @@ export const upload = multer({
     }
   },
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB limit
+    fileSize: 100 * 1024 * 1024 // 100MB limit for better quality videos
   }
 });
 
@@ -140,16 +140,55 @@ export function getOptimizedVideoUrl(
     height?: number;
     quality?: string | number;
     format?: string;
+    bitrate?: string;
+    fps?: number;
   } = {}
 ): string {
   return cloudinary.url(publicId, {
     resource_type: 'video',
-    width: options.width || 720,
+    width: options.width || 1080,
     height: options.height,
-    quality: options.quality || 'auto',
+    quality: options.quality || 'auto:best',
     format: options.format || 'mp4',
+    video_codec: 'h264',
+    audio_codec: 'aac',
+    flags: 'progressive',
     ...options
   });
+}
+
+/**
+ * Get multiple video qualities for adaptive streaming
+ */
+export function getAdaptiveVideoUrls(publicId: string): {
+  quality: string;
+  url: string;
+  width: number;
+  height: number;
+}[] {
+  const qualities = [
+    { quality: '1080p', width: 1920, height: 1080, bitrate: '5m' },
+    { quality: '720p', width: 1280, height: 720, bitrate: '3m' },
+    { quality: '480p', width: 854, height: 480, bitrate: '1.5m' },
+    { quality: '360p', width: 640, height: 360, bitrate: '800k' }
+  ];
+
+  return qualities.map(q => ({
+    quality: q.quality,
+    url: cloudinary.url(publicId, {
+      resource_type: 'video',
+      width: q.width,
+      height: q.height,
+      quality: 'auto:best',
+      format: 'mp4',
+      video_codec: 'h264',
+      audio_codec: 'aac',
+      flags: 'progressive',
+      bit_rate: q.bitrate
+    }),
+    width: q.width,
+    height: q.height
+  }));
 }
 
 export { cloudinary };

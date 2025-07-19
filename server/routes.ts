@@ -12,7 +12,8 @@ import {
   uploadMultipleToCloudinary, 
   deleteFromCloudinary,
   getOptimizedImageUrl,
-  getOptimizedVideoUrl 
+  getOptimizedVideoUrl,
+  getAdaptiveVideoUrls
 } from "./cloudinary";
 
 function requireAuth(req: any, res: any, next: any) {
@@ -505,17 +506,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const uploadResult = await uploadToCloudinary(req.file.buffer, {
         folder: 'uploads/videos',
-        resource_type: 'video'
+        resource_type: 'video',
+        video_codec: 'h264',
+        audio_codec: 'aac',
+        quality: 'auto:best',
+        format: 'mp4'
       });
+
+      const optimizedUrl = getOptimizedVideoUrl(uploadResult.public_id, {
+        quality: 'auto:best',
+        format: 'mp4'
+      });
+
+      const adaptiveQualities = getAdaptiveVideoUrls(uploadResult.public_id);
 
       res.json({
         url: uploadResult.secure_url,
         publicId: uploadResult.public_id,
-        optimizedUrl: getOptimizedVideoUrl(uploadResult.public_id)
+        optimizedUrl,
+        adaptiveQualities,
+        metadata: {
+          format: uploadResult.format,
+          width: uploadResult.width,
+          height: uploadResult.height,
+          duration: uploadResult.duration,
+          bitrate: uploadResult.bit_rate,
+          fileSize: uploadResult.bytes
+        }
       });
     } catch (error) {
       console.error("Error uploading video:", error);
       res.status(500).json({ message: "Failed to upload video" });
+    }
+  });
+
+  // Get adaptive video qualities for existing videos
+  app.get("/api/video-qualities/:publicId", async (req, res) => {
+    try {
+      const { publicId } = req.params;
+      const adaptiveQualities = getAdaptiveVideoUrls(publicId);
+      
+      res.json({
+        publicId,
+        qualities: adaptiveQualities
+      });
+    } catch (error) {
+      console.error("Error getting video qualities:", error);
+      res.status(500).json({ message: "Failed to get video qualities" });
     }
   });
 
