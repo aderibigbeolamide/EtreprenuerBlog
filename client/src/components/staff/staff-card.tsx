@@ -14,14 +14,17 @@ export default function StaffCard({ member, showFullBio = false }: StaffCardProp
       <CardContent className="p-4 sm:p-6 text-center h-full flex flex-col">
         {/* Profile Image */}
         {member.imageUrl ? (
-          <img 
-            src={member.imageUrl} 
-            alt={member.name}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mx-auto mb-4 object-cover"
-          />
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto mb-4 overflow-hidden bg-gray-100 ring-2 ring-primary/10">
+            <img 
+              src={member.imageUrl} 
+              alt={member.name}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center 25%' }}
+            />
+          </div>
         ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
-            <Users className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+          <div className="w-24 h-24 sm:w-28 sm:h-28 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center ring-2 ring-primary/10">
+            <Users className="h-12 w-12 sm:h-14 sm:w-14 text-white" />
           </div>
         )}
         

@@ -108,11 +108,14 @@ export default function BlogCard({ post }: BlogCardProps) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center">
             {post.author?.imageUrl ? (
-              <img 
-                src={post.author.imageUrl} 
-                alt={post.author.name}
-                className="w-8 h-8 rounded-full mr-3 object-cover"
-              />
+              <div className="w-8 h-8 rounded-full mr-3 overflow-hidden bg-gray-100">
+                <img 
+                  src={post.author.imageUrl} 
+                  alt={post.author.name}
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: 'center 25%' }}
+                />
+              </div>
             ) : (
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
                 {post.author?.name?.split(' ').map(n => n[0]).join('') || 'A'}
