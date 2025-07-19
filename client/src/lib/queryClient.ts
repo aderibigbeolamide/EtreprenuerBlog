@@ -13,8 +13,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Ensure URL is absolute for proper API requests
-  const apiUrl = url.startsWith('http') ? url : `${APP_CONFIG.APP_DOMAIN}${url}`;
+  // Use relative URLs when APP_DOMAIN is empty (browser environment)
+  const apiUrl = APP_CONFIG.APP_DOMAIN ? `${APP_CONFIG.APP_DOMAIN}${url}` : url;
   
   const res = await fetch(apiUrl, {
     method,
@@ -34,8 +34,8 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const url = queryKey.join("/") as string;
-    // Ensure URL is absolute for proper API requests
-    const apiUrl = url.startsWith('http') ? url : `${APP_CONFIG.APP_DOMAIN}${url}`;
+    // Use relative URLs when APP_DOMAIN is empty (browser environment)
+    const apiUrl = APP_CONFIG.APP_DOMAIN ? `${APP_CONFIG.APP_DOMAIN}${url}` : url;
     
     const res = await fetch(apiUrl, {
       credentials: "include",

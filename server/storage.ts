@@ -77,10 +77,15 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const role = (insertUser as any).role || 'user';
+    const isApproved = (insertUser as any).isApproved !== undefined ? (insertUser as any).isApproved : (role === 'admin');
+    
     const user: User = {
       id: this.userIdCounter++,
-      ...insertUser,
-      isApproved: insertUser.role === 'admin' ? true : false,
+      username: insertUser.username,
+      password: insertUser.password,
+      role: role,
+      isApproved: isApproved,
       createdAt: new Date(),
       updatedAt: new Date()
     };

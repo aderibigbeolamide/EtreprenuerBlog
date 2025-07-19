@@ -2,7 +2,7 @@
 export const APP_CONFIG = {
   // Get the app domain from environment or infer from current location
   APP_DOMAIN: typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.host}`
+    ? '' // Use relative URLs in browser
     : process.env.APP_DOMAIN || 'http://localhost:5000',
   
   // API endpoints
