@@ -9,7 +9,8 @@ import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, isNull } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { Pool } from '@neondatabase/serverless';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 const PostgresSessionStore = connectPg(session);
 
@@ -538,10 +539,8 @@ async function createStorage(): Promise<IStorage> {
     if (process.env.DATABASE_URL) {
       console.log("✅ Database URL found, attempting PostgreSQL storage connection...");
       
-      // Test database connection first
-      const testPool = new Pool({ connectionString: process.env.DATABASE_URL });
-      await testPool.query('SELECT 1');
-      await testPool.end();
+      // Test database connection first using existing pool
+      await pool.query('SELECT 1');
       
       console.log("✅ Database connection successful, using PostgreSQL storage");
       storage = new DatabaseStorage();
