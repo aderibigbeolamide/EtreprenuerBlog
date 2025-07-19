@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -72,8 +75,17 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Seed admin user on startup
-  await seedAdmin();
+  // Seed admin user on startup with timeout
+  try {
+    console.log("Seeding admin user...");
+    await Promise.race([
+      seedAdmin(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Seed timeout')), 10000))
+    ]);
+    console.log("Admin seeding completed successfully");
+  } catch (error) {
+    console.warn("Admin seeding failed or timed out:", error);
+  }
   
   const server = await registerRoutes(app);
 

@@ -5,11 +5,11 @@ import {
   type BlogPost, type InsertBlogPost, type BlogPostWithAuthor,
   type Comment, type InsertComment
 } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, isNull } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import { Pool } from '@neondatabase/serverless';
 
 const PostgresSessionStore = connectPg(session);
 
@@ -236,7 +236,16 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ pool, createTableIfMissing: true });
+    try {
+      this.sessionStore = new PostgresSessionStore({ 
+        pool, 
+        createTableIfMissing: true,
+        tableName: 'session'
+      });
+    } catch (error) {
+      console.warn("Failed to create PostgreSQL session store, using memory store:", error);
+      this.sessionStore = new session.MemoryStore();
+    }
   }
 
   // User methods
@@ -435,20 +444,37 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Create storage instance based on database availability
-let storage: IStorage;
+// Create storage instance based on database availability (lazy initialization)
+let storage: IStorage | undefined;
 
-try {
-  // Try to use DatabaseStorage if DATABASE_URL is available
-  if (process.env.DATABASE_URL) {
-    storage = new DatabaseStorage();
-  } else {
-    throw new Error("No DATABASE_URL provided");
+async function createStorage(): Promise<IStorage> {
+  if (storage) {
+    return storage;
   }
-} catch (error) {
-  console.warn("Database not available, using in-memory storage:", (error as Error).message);
-  // Fallback to memory storage if database is not available
-  storage = new MemStorage();
+
+  try {
+    // Try to use DatabaseStorage if DATABASE_URL is available
+    if (process.env.DATABASE_URL) {
+      console.log("✅ Database URL found, attempting PostgreSQL storage connection...");
+      
+      // Test database connection first
+      const testPool = new Pool({ connectionString: process.env.DATABASE_URL });
+      await testPool.query('SELECT 1');
+      await testPool.end();
+      
+      console.log("✅ Database connection successful, using PostgreSQL storage");
+      storage = new DatabaseStorage();
+    } else {
+      throw new Error("No DATABASE_URL provided");
+    }
+  } catch (error) {
+    console.warn("Database connection failed, using in-memory storage:", (error as Error).message);
+    // Fallback to memory storage if database is not available
+    storage = new MemStorage();
+  }
+
+  return storage;
 }
 
-export { storage };
+// Export a getter function instead of the instance directly
+export const getStorage = async (): Promise<IStorage> => await createStorage();

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import path from "path";
 import fs from "fs";
 import { setupAuth } from "./auth";
-import { storage } from "./storage";
+import { getStorage } from "./storage";
 import { insertBlogPostSchema, insertCommentSchema, insertStaffSchema } from "@shared/schema";
 import { generateBlogContent, analyzeImage } from "./openai";
 import { 
@@ -22,9 +22,9 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
-export function registerRoutes(app: Express): Server {
+export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
-  setupAuth(app);
+  await setupAuth(app);
 
   // Serve uploaded files
   app.use('/uploads', (req, res, next) => {
@@ -60,6 +60,7 @@ export function registerRoutes(app: Express): Server {
         published: published === "true"
       };
       
+      const storage = await getStorage();
       const posts = await storage.getAllBlogPosts(filters);
       res.json(posts);
     } catch (error) {
@@ -70,6 +71,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/blog-posts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const storage = await getStorage();
       const post = await storage.getBlogPostById(id);
       
       if (!post) {
@@ -86,6 +88,7 @@ export function registerRoutes(app: Express): Server {
   // Public staff routes
   app.get("/api/staff", async (req, res) => {
     try {
+      const storage = await getStorage();
       const staffMembers = await storage.getAllStaff();
       res.json(staffMembers);
     } catch (error) {
@@ -99,6 +102,7 @@ export function registerRoutes(app: Express): Server {
       const postId = parseInt(req.params.id);
       const parentId = req.query.parentId ? parseInt(req.query.parentId as string) : undefined;
       
+      const storage = await getStorage();
       const comments = await storage.getCommentsByPostId(postId, parentId);
       res.json(comments);
     } catch (error) {
@@ -114,6 +118,7 @@ export function registerRoutes(app: Express): Server {
         postId
       });
       
+      const storage = await getStorage();
       const comment = await storage.createComment(commentData);
       res.status(201).json(comment);
     } catch (error) {
@@ -131,6 +136,7 @@ export function registerRoutes(app: Express): Server {
         published: undefined // Show all posts for admin
       };
       
+      const storage = await getStorage();
       const posts = await storage.getAllBlogPosts(filters);
       res.json(posts);
     } catch (error) {
@@ -173,6 +179,7 @@ export function registerRoutes(app: Express): Server {
         isAiGenerated: req.body.isAiGenerated === 'true'
       });
 
+      const storage = await getStorage();
       const post = await storage.createBlogPost(postData);
       res.status(201).json(post);
     } catch (error) {
@@ -221,6 +228,7 @@ export function registerRoutes(app: Express): Server {
         updateData.isAiGenerated = updateData.isAiGenerated === 'true';
       }
 
+      const storage = await getStorage();
       const post = await storage.updateBlogPost(id, updateData);
       
       if (!post) {
@@ -236,6 +244,7 @@ export function registerRoutes(app: Express): Server {
   app.delete("/api/admin/blog-posts/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const storage = await getStorage();
       const success = await storage.deleteBlogPost(id);
       
       if (!success) {
@@ -293,6 +302,7 @@ export function registerRoutes(app: Express): Server {
         isActive: req.body.isActive === 'true'
       });
 
+      const storage = await getStorage();
       const staff = await storage.createStaff(staffData);
       res.status(201).json(staff);
     } catch (error) {
@@ -314,6 +324,7 @@ export function registerRoutes(app: Express): Server {
         updateData.imageUrl = uploadResult.secure_url;
       }
 
+      const storage = await getStorage();
       const staff = await storage.updateStaff(id, updateData);
       
       if (!staff) {
@@ -329,6 +340,7 @@ export function registerRoutes(app: Express): Server {
   app.delete("/api/admin/staff/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const storage = await getStorage();
       const success = await storage.deleteStaff(id);
       
       if (!success) {
@@ -345,6 +357,7 @@ export function registerRoutes(app: Express): Server {
   app.put("/api/admin/comments/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const storage = await getStorage();
       const comment = await storage.updateComment(id, req.body);
       
       if (!comment) {
@@ -360,6 +373,7 @@ export function registerRoutes(app: Express): Server {
   app.delete("/api/admin/comments/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const storage = await getStorage();
       const success = await storage.deleteComment(id);
       
       if (!success) {

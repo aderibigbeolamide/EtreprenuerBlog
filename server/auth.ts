@@ -4,7 +4,7 @@ import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
+import { getStorage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { config } from "./config";
 
@@ -29,7 +29,8 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
-export function setupAuth(app: Express) {
+export async function setupAuth(app: Express) {
+  const storage = await getStorage();
   const sessionSettings: session.SessionOptions = {
     secret: config.SESSION_SECRET,
     resave: false,
@@ -50,6 +51,7 @@ export function setupAuth(app: Express) {
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
+      const storage = await getStorage();
       const user = await storage.getUserByUsername(username);
       if (!user || !(await comparePasswords(password, user.password))) {
         return done(null, false);
@@ -61,11 +63,13 @@ export function setupAuth(app: Express) {
 
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
+    const storage = await getStorage();
     const user = await storage.getUser(id);
     done(null, user);
   });
 
   app.post("/api/auth/register", async (req, res, next) => {
+    const storage = await getStorage();
     const existingUser = await storage.getUserByUsername(req.body.username);
     if (existingUser) {
       return res.status(400).send("Username already exists");

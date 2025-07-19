@@ -21,14 +21,28 @@ export const config = {
 } as const;
 
 function getAppDomain(): string {
-  // If APP_DOMAIN is explicitly set, use it
+  // If APP_DOMAIN is explicitly set, use it (highest priority)
   if (process.env.APP_DOMAIN) {
     return process.env.APP_DOMAIN;
   }
   
-  // For production on Replit, use the Replit domain
+  // For production deployment on Replit, use the Replit domain
   if (process.env.REPLIT_DEV_DOMAIN) {
     return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  
+  // For production with REPL_SLUG (another Replit environment variable)
+  if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+    return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+  }
+  
+  // For deployed apps on custom domains, check common deployment env vars
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  if (process.env.RAILWAY_STATIC_URL) {
+    return process.env.RAILWAY_STATIC_URL;
   }
   
   // For local development, use localhost with the port

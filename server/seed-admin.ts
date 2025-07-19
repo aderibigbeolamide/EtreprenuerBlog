@@ -1,6 +1,6 @@
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
+import { getStorage } from "./storage";
 
 const scryptAsync = promisify(scrypt);
 
@@ -15,6 +15,7 @@ async function seedAdmin() {
   const adminPassword = "admin123";
   
   try {
+    const storage = await getStorage();
     // Check if admin already exists
     const existingAdmin = await storage.getUserByUsername(adminUsername);
     if (existingAdmin) {
