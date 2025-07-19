@@ -178,6 +178,20 @@ The application is designed for easy deployment on platforms like Replit, with a
   - Password confirmation: Trimmed comparison for accurate matching
   - Input validation: Prevents submission of whitespace-only credentials
 
+### January 19, 2025 - UI Improvements & Content Updates
+- **Fixed staff image display issues:**
+  - Improved circular image containers to properly show faces without cropping
+  - Increased image size from 20x20/24x24 to 24x24/28x28 for better visibility
+  - Added proper image positioning (center 25%) to focus on face area
+  - Applied consistent fixes across staff cards and blog author images
+  - Added subtle ring border for visual enhancement
+- **Updated footer content:**
+  - Changed copyright year from "© 2024" to "© 2025"
+  - Replaced "All rights reserved" with university motto: "changing the world through innovations"
+- **Updated About page image:**
+  - Replaced Senate Building image with new uploaded image (AboutImage_1752952602352.jpeg)
+  - Updated alt text to reflect Centre of Entrepreneurship branding
+
 ### January 18, 2025 - Database Setup & Storage System
 - Implemented flexible storage system with database fallback to in-memory storage
 - Created comprehensive MemStorage class for development and testing

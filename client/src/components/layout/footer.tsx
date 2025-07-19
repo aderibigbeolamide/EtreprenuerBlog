@@ -98,7 +98,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Centre of Entrepreneurship. All rights reserved. | 
+          <p>&copy; 2025 Centre of Entrepreneurship. changing the world through innovations | 
              <a href="#" className="hover:text-white transition-colors ml-1">Privacy Policy</a> | 
              <a href="#" className="hover:text-white transition-colors ml-1">Terms of Service</a>
           </p>
