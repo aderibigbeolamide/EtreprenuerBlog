@@ -52,8 +52,12 @@ export async function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       const storage = await getStorage();
-      const user = await storage.getUserByUsername(username);
-      if (!user || !(await comparePasswords(password, user.password))) {
+      // Trim whitespace from username and password
+      const trimmedUsername = username.trim();
+      const trimmedPassword = password.trim();
+      
+      const user = await storage.getUserByUsername(trimmedUsername);
+      if (!user || !(await comparePasswords(trimmedPassword, user.password))) {
         return done(null, false);
       } else if (!user.isApproved && user.role !== 'admin') {
         return done(null, false, { message: 'Account pending approval' });
@@ -72,14 +76,25 @@ export async function setupAuth(app: Express) {
 
   app.post("/api/auth/register", async (req, res, next) => {
     const storage = await getStorage();
-    const existingUser = await storage.getUserByUsername(req.body.username);
+    
+    // Trim whitespace from input data
+    const trimmedUsername = req.body.username?.trim();
+    const trimmedPassword = req.body.password?.trim();
+    
+    // Validate trimmed inputs
+    if (!trimmedUsername || !trimmedPassword) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    const existingUser = await storage.getUserByUsername(trimmedUsername);
     if (existingUser) {
       return res.status(400).json({ message: "Username already exists" });
     }
 
     const user = await storage.createUser({
       ...req.body,
-      password: await hashPassword(req.body.password),
+      username: trimmedUsername,
+      password: await hashPassword(trimmedPassword),
     });
 
     // Only auto-login admin users or approved users

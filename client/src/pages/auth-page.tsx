@@ -20,17 +20,20 @@ export default function AuthPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(loginData);
+    loginMutation.mutate({
+      username: loginData.username.trim(),
+      password: loginData.password.trim()
+    });
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (registerData.password !== registerData.confirmPassword) {
+    if (registerData.password.trim() !== registerData.confirmPassword.trim()) {
       return;
     }
     registerMutation.mutate({
-      username: registerData.username,
-      password: registerData.password
+      username: registerData.username.trim(),
+      password: registerData.password.trim()
     });
   };
 
@@ -119,7 +122,7 @@ export default function AuthPage() {
                     <Button 
                       type="submit" 
                       className="w-full bg-primary hover:bg-blue-700"
-                      disabled={loginMutation.isPending}
+                      disabled={loginMutation.isPending || !loginData.username.trim() || !loginData.password.trim()}
                     >
                       {loginMutation.isPending ? "Signing in..." : "Sign In"}
                     </Button>
@@ -161,13 +164,13 @@ export default function AuthPage() {
                         required
                       />
                     </div>
-                    {registerData.password !== registerData.confirmPassword && registerData.confirmPassword && (
+                    {registerData.password.trim() !== registerData.confirmPassword.trim() && registerData.confirmPassword && (
                       <p className="text-sm text-red-600">Passwords do not match</p>
                     )}
                     <Button 
                       type="submit" 
                       className="w-full bg-accent hover:bg-orange-600"
-                      disabled={registerMutation.isPending || registerData.password !== registerData.confirmPassword}
+                      disabled={registerMutation.isPending || registerData.password.trim() !== registerData.confirmPassword.trim() || !registerData.username.trim() || !registerData.password.trim()}
                     >
                       {registerMutation.isPending ? "Creating account..." : "Create Account"}
                     </Button>
