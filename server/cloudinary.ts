@@ -165,12 +165,15 @@ export function getAdaptiveVideoUrls(publicId: string): {
   url: string;
   width: number;
   height: number;
+  bitrate: string;
 }[] {
   const qualities = [
     { quality: '1080p', width: 1920, height: 1080, bitrate: '5m' },
     { quality: '720p', width: 1280, height: 720, bitrate: '3m' },
-    { quality: '480p', width: 854, height: 480, bitrate: '1.5m' },
-    { quality: '360p', width: 640, height: 360, bitrate: '800k' }
+    { quality: '480p', width: 854, height: 480, bitrate: '1500k' },
+    { quality: '360p', width: 640, height: 360, bitrate: '800k' },
+    { quality: '240p', width: 426, height: 240, bitrate: '400k' },
+    { quality: '144p', width: 256, height: 144, bitrate: '200k' }
   ];
 
   return qualities.map(q => ({
@@ -179,7 +182,7 @@ export function getAdaptiveVideoUrls(publicId: string): {
       resource_type: 'video',
       width: q.width,
       height: q.height,
-      quality: 'auto:best',
+      quality: q.quality === '240p' || q.quality === '144p' ? 'auto:good' : 'auto:best',
       format: 'mp4',
       video_codec: 'h264',
       audio_codec: 'aac',
@@ -187,7 +190,8 @@ export function getAdaptiveVideoUrls(publicId: string): {
       bit_rate: q.bitrate
     }),
     width: q.width,
-    height: q.height
+    height: q.height,
+    bitrate: q.bitrate
   }));
 }
 

@@ -46,7 +46,18 @@ export default function VideoPlayer({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [showControls, setShowControls] = useState(true);
-  const [selectedQuality, setSelectedQuality] = useState('auto');
+  const [selectedQuality, setSelectedQuality] = useState('Auto');
+  const [videoResolution, setVideoResolution] = useState<{ width: number; height: number } | null>(null);
+
+  // Extract public ID from Cloudinary URL if not provided
+  const extractedPublicId = publicId || (() => {
+    try {
+      const match = videoUrl.match(/\/upload\/(?:v\d+\/)?(.+?)\.(mp4|webm|mov|avi)/);
+      return match ? match[1] : null;
+    } catch {
+      return null;
+    }
+  })();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -55,14 +66,22 @@ export default function VideoPlayer({
     const updateTime = () => setCurrentTime(video.currentTime);
     const updateDuration = () => setDuration(video.duration);
     const handleEnded = () => setIsPlaying(false);
+    const updateResolution = () => {
+      setVideoResolution({
+        width: video.videoWidth,
+        height: video.videoHeight
+      });
+    };
 
     video.addEventListener('timeupdate', updateTime);
     video.addEventListener('loadedmetadata', updateDuration);
+    video.addEventListener('loadedmetadata', updateResolution);
     video.addEventListener('ended', handleEnded);
 
     return () => {
       video.removeEventListener('timeupdate', updateTime);
       video.removeEventListener('loadedmetadata', updateDuration);
+      video.removeEventListener('loadedmetadata', updateResolution);
       video.removeEventListener('ended', handleEnded);
     };
   }, []);
@@ -129,14 +148,19 @@ export default function VideoPlayer({
   };
 
   const getQualityUrls = () => {
-    if (!publicId) return [{ quality: 'Original', url: videoUrl }];
+    if (!extractedPublicId) return [{ quality: 'Original', url: videoUrl }];
+    
+    const baseUrl = videoUrl.split('/upload/')[0] + '/upload/';
+    const fileExtension = videoUrl.split('.').pop() || 'mp4';
     
     return [
       { quality: 'Auto', url: videoUrl },
-      { quality: '1080p', url: videoUrl.replace(/\/upload\//, '/upload/q_auto:best,w_1920,h_1080/') },
-      { quality: '720p', url: videoUrl.replace(/\/upload\//, '/upload/q_auto:best,w_1280,h_720/') },
-      { quality: '480p', url: videoUrl.replace(/\/upload\//, '/upload/q_auto:best,w_854,h_480/') },
-      { quality: '360p', url: videoUrl.replace(/\/upload\//, '/upload/q_auto:best,w_640,h_360/') }
+      { quality: '1080p', url: `${baseUrl}q_auto:best,w_1920,h_1080,br_5m/${extractedPublicId}.${fileExtension}` },
+      { quality: '720p', url: `${baseUrl}q_auto:best,w_1280,h_720,br_3m/${extractedPublicId}.${fileExtension}` },
+      { quality: '480p', url: `${baseUrl}q_auto:best,w_854,h_480,br_1500k/${extractedPublicId}.${fileExtension}` },
+      { quality: '360p', url: `${baseUrl}q_auto:best,w_640,h_360,br_800k/${extractedPublicId}.${fileExtension}` },
+      { quality: '240p', url: `${baseUrl}q_auto:good,w_426,h_240,br_400k/${extractedPublicId}.${fileExtension}` },
+      { quality: '144p', url: `${baseUrl}q_auto:good,w_256,h_144,br_200k/${extractedPublicId}.${fileExtension}` }
     ];
   };
 
@@ -171,6 +195,15 @@ export default function VideoPlayer({
           </div>
         )}
 
+        {/* Quality Indicator */}
+        {videoResolution && (
+          <div className="absolute top-2 right-2 z-10">
+            <Badge variant="secondary" className="bg-black/70 text-white text-xs">
+              {videoResolution.height}p
+            </Badge>
+          </div>
+        )}
+
         <div 
           className="relative"
           onMouseEnter={() => setShowControls(true)}
@@ -178,7 +211,7 @@ export default function VideoPlayer({
         >
           <video
             ref={videoRef}
-            className="w-full h-auto max-h-[70vh] object-contain bg-black"
+            className="w-full h-auto min-h-[300px] max-h-[70vh] object-contain bg-black rounded-lg"
             autoPlay={autoPlay}
             muted={isMuted}
             playsInline
@@ -252,20 +285,25 @@ export default function VideoPlayer({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-white hover:bg-white/20 p-2"
+                        className="text-white hover:bg-white/20 px-3 py-2 text-xs"
                       >
-                        <Settings className="h-4 w-4" />
+                        {selectedQuality}
+                        <Settings className="h-3 w-3 ml-1" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end" className="w-32">
                       {getQualityUrls().map((quality) => (
                         <DropdownMenuItem
                           key={quality.quality}
                           onClick={() => changeQuality(quality.quality, quality.url)}
-                          className={selectedQuality === quality.quality ? 'bg-primary/10' : ''}
+                          className={`text-sm ${selectedQuality === quality.quality ? 'bg-primary/10 font-medium' : ''}`}
                         >
-                          {quality.quality}
-                          {selectedQuality === quality.quality && ' ✓'}
+                          <div className="flex items-center justify-between w-full">
+                            <span>{quality.quality}</span>
+                            {selectedQuality === quality.quality && (
+                              <span className="text-primary">✓</span>
+                            )}
+                          </div>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>

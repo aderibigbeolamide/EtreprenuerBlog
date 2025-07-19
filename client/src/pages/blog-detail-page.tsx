@@ -197,16 +197,23 @@ export default function BlogDetailPage() {
               Video Content
             </h3>
             <div className="space-y-6">
-              {post.videoUrls.map((videoUrl, index) => (
-                <VideoPlayer
-                  key={index}
-                  videoUrl={videoUrl}
-                  title={`${post.title} - Video ${index + 1}`}
-                  className="w-full"
-                  controls={true}
-                  muted={false}
-                />
-              ))}
+              {post.videoUrls.map((videoUrl, index) => {
+                // Extract public ID for quality control
+                const publicIdMatch = videoUrl.match(/\/upload\/(?:v\d+\/)?(.+?)\.(mp4|webm|mov|avi)/);
+                const extractedPublicId = publicIdMatch ? publicIdMatch[1] : undefined;
+                
+                return (
+                  <VideoPlayer
+                    key={index}
+                    videoUrl={videoUrl}
+                    publicId={extractedPublicId}
+                    title={`${post.title} - Video ${index + 1}`}
+                    className="w-full"
+                    controls={true}
+                    muted={false}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
