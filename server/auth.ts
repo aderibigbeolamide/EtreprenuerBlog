@@ -126,6 +126,13 @@ export async function setupAuth(app: Express) {
   });
 
   app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
+    console.log("🔍 Debug /api/auth/login success:");
+    console.log("  - Session ID:", req.sessionID || "No session ID");
+    console.log("  - Session data:", req.session || "No session");
+    console.log("  - User authenticated:", req.isAuthenticated());
+    console.log("  - Request cookies:", req.headers.cookie || "No cookies");
+    console.log("  - Request origin:", req.headers.origin || "No origin");
+    
     res.status(200).json(req.user);
   });
 
@@ -137,7 +144,20 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    console.log("🔍 Debug /api/user request:");
+    console.log("  - Session ID:", req.sessionID || "No session ID");
+    console.log("  - Session data:", req.session || "No session");
+    console.log("  - User authenticated:", req.isAuthenticated());
+    console.log("  - Request cookies:", req.headers.cookie || "No cookies");
+    console.log("  - Request origin:", req.headers.origin || "No origin");
+    console.log("  - User agent:", req.headers['user-agent'] || "No user agent");
+    
+    if (!req.isAuthenticated()) {
+      console.log("❌ User not authenticated, returning 401");
+      return res.sendStatus(401);
+    }
+    
+    console.log("✅ User authenticated, returning user data");
     res.json(req.user);
   });
 }
