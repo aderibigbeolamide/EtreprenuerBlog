@@ -580,6 +580,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User delete route - users can delete their own blog posts
+  app.delete("/api/blog-posts/:id", requireApprovedAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const storage = await getStorage();
+      
+      // Check if user owns this blog post
+      const existingPost = await storage.getBlogPostById(id);
+      if (!existingPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      if (existingPost.authorName !== req.user.username && req.user.role !== 'admin') {
+        return res.status(403).json({ message: "You can only delete your own blog posts" });
+      }
+      
+      const success = await storage.deleteBlogPost(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json({ message: "Blog post deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user blog post:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
   // AI content generation
   app.post("/api/admin/generate-content", requireAdminAuth, upload.single('image'), async (req, res) => {
     try {
