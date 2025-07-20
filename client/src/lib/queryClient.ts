@@ -9,17 +9,19 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
+  options: {
+    method?: string;
+    data?: unknown;
+  } = {}
 ): Promise<Response> {
   // Use relative URLs when APP_DOMAIN is empty (browser environment)
   const apiUrl = APP_CONFIG.APP_DOMAIN ? `${APP_CONFIG.APP_DOMAIN}${url}` : url;
   
   const res = await fetch(apiUrl, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    method: options.method || "GET",
+    headers: options.data ? { "Content-Type": "application/json" } : {},
+    body: options.data ? JSON.stringify(options.data) : undefined,
     credentials: "include",
   });
 
