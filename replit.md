@@ -213,6 +213,27 @@ The application is designed for easy deployment on platforms like Replit, with a
   - User approval system working correctly for approved accounts
   - Session management fully functional with proper cookie handling
 
+### January 20, 2025 - Enhanced User Dashboard & Blog Management
+- **Fixed database schema issue:**
+  - Successfully added missing user_id column to staff table
+  - Users can now create and manage their own staff profiles
+- **Enhanced user dashboard with complete functionality:**
+  - Added profile image upload capability with Cloudinary integration
+  - Users can edit their profiles with image upload functionality
+  - Created "All Staff" tab for viewing other staff members (read-only)
+  - Added visual indicators showing user's own profile
+  - Profile creation form with image upload using camera icon interface
+- **Fixed user blog deletion functionality:**
+  - Added user delete route `/api/blog-posts/:id` for regular users
+  - Users can now delete their own blog posts with proper security
+  - Only blog authors can delete their own posts (admins can delete any)
+  - Security enforced at backend level with author verification
+- **Branding and SEO improvements:**
+  - Set University of Abuja logo as website favicon
+  - Added comprehensive meta tags for SEO and social media sharing
+  - Enhanced page title and description for better search visibility
+  - Added Open Graph tags for improved social media link previews
+
 ### January 19, 2025 - Enhanced Video System & Migration Completion
 - **Fixed staff image display issues:**
   - Improved circular image containers to properly show faces without cropping
