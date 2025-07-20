@@ -21,7 +21,10 @@ import {
   Linkedin,
   Clock,
   Check,
-  Home
+  Home,
+  Upload,
+  Users,
+  Camera
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { insertStaffSchema, insertBlogPostSchema } from "@shared/schema";
@@ -132,7 +135,7 @@ function UserDashboardContent({ user }: { user: any }) {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               My Profile
@@ -144,6 +147,10 @@ function UserDashboardContent({ user }: { user: any }) {
             <TabsTrigger value="create" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create Blog
+            </TabsTrigger>
+            <TabsTrigger value="staff" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              All Staff
             </TabsTrigger>
           </TabsList>
 
@@ -158,6 +165,10 @@ function UserDashboardContent({ user }: { user: any }) {
           <TabsContent value="create">
             <CreateBlogTab user={user} />
           </TabsContent>
+
+          <TabsContent value="staff">
+            <AllStaffTab user={user} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -167,6 +178,8 @@ function UserDashboardContent({ user }: { user: any }) {
 function ProfileTab({ staff, user, staffLoading }: any) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(!staff); // Auto-edit if no profile exists
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: staff?.name || user.username,
     role: staff?.role || "",
@@ -175,18 +188,47 @@ function ProfileTab({ staff, user, staffLoading }: any) {
     linkedinUrl: staff?.linkedinUrl || "",
   });
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createStaffMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("/api/staff", {
-        method: "POST",
-        data: { ...data, userId: user.id }
+      const formData = new FormData();
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
       });
+      formData.append('userId', user.id.toString());
+      
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
+      const res = await fetch("/api/staff", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create profile");
+      }
+      
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
       toast({ title: "Profile created successfully!" });
       setIsEditing(false);
+      setSelectedImage(null);
+      setImagePreview(null);
     },
     onError: (error: Error) => {
       toast({
@@ -199,16 +241,34 @@ function ProfileTab({ staff, user, staffLoading }: any) {
 
   const updateStaffMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest(`/api/staff/${staff.id}`, {
-        method: "PATCH",
-        data
+      const formData = new FormData();
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
       });
+      
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
+      const res = await fetch(`/api/staff/${staff.id}`, {
+        method: "PATCH",
+        body: formData,
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update profile");
+      }
+      
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/staff"] });
       toast({ title: "Profile updated successfully!" });
       setIsEditing(false);
+      setSelectedImage(null);
+      setImagePreview(null);
     },
     onError: (error: Error) => {
       toast({
@@ -256,6 +316,30 @@ function ProfileTab({ staff, user, staffLoading }: any) {
       <CardContent>
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Profile Image Upload */}
+            <div className="flex flex-col items-center space-y-4 mb-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                  {imagePreview || staff?.imageUrl ? (
+                    <img 
+                      src={imagePreview || staff?.imageUrl} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <Camera className="h-8 w-8 text-gray-400" />
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <p className="text-sm text-gray-600">Click to upload profile image</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Full Name</Label>
@@ -338,6 +422,17 @@ function ProfileTab({ staff, user, staffLoading }: any) {
           </form>
         ) : staff ? (
           <div className="space-y-4">
+            {/* Display Profile Image */}
+            {staff.imageUrl && (
+              <div className="flex justify-center mb-6">
+                <img 
+                  src={staff.imageUrl} 
+                  alt={staff.name} 
+                  className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                />
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium text-gray-500">Name</Label>
@@ -584,6 +679,100 @@ function CreateBlogTab({ user }: any) {
             {createBlogMutation.isPending ? "Creating..." : formData.isPublished ? "Publish Blog Post" : "Save as Draft"}
           </Button>
         </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AllStaffTab({ user }: any) {
+  const { data: allStaff = [], isLoading } = useQuery({
+    queryKey: ["/api/staff"],
+    queryFn: async () => {
+      const res = await fetch("/api/staff");
+      if (!res.ok) throw new Error("Failed to fetch staff");
+      return res.json();
+    },
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-8">Loading staff members...</div>;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          All Staff Members ({allStaff.length})
+        </CardTitle>
+        <p className="text-sm text-gray-600">View all staff profiles in the Centre of Entrepreneurship</p>
+      </CardHeader>
+      <CardContent>
+        {allStaff.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No staff members found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {allStaff.map((staffMember: any) => (
+              <div key={staffMember.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  {/* Profile Image */}
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                    {staffMember.imageUrl ? (
+                      <img 
+                        src={staffMember.imageUrl} 
+                        alt={staffMember.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Staff Info */}
+                  <div className="space-y-1">
+                    <h3 className="font-medium text-gray-900">{staffMember.name}</h3>
+                    <p className="text-sm text-gray-600">{staffMember.role}</p>
+                    {staffMember.userId === user.id && (
+                      <Badge variant="secondary" className="text-xs">Your Profile</Badge>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  <p className="text-xs text-gray-500 line-clamp-3">{staffMember.bio}</p>
+
+                  {/* Contact Info */}
+                  <div className="flex gap-2 justify-center">
+                    {staffMember.email && (
+                      <a 
+                        href={`mailto:${staffMember.email}`}
+                        className="text-blue-600 hover:text-blue-800"
+                        title={`Email ${staffMember.name}`}
+                      >
+                        <Mail className="h-4 w-4" />
+                      </a>
+                    )}
+                    {staffMember.linkedinUrl && (
+                      <a 
+                        href={staffMember.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800"
+                        title={`LinkedIn Profile`}
+                      >
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
