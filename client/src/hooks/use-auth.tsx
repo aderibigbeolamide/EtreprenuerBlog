@@ -57,10 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "POST",
         data: credentials
       });
-      return await res.json();
+      const result = await res.json();
+      return result;
     },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+    onSuccess: (result: any) => {
+      if (result.user && result.user.isApproved) {
+        queryClient.setQueryData(["/api/user"], result.user);
+        toast({
+          title: "Registration successful",
+          description: "Welcome! You can now access your dashboard.",
+        });
+      } else {
+        toast({
+          title: "Registration successful",
+          description: "Please wait for admin approval. You'll receive an email once approved, or contact the admin for faster approval.",
+          variant: "default",
+        });
+      }
     },
     onError: (error: Error) => {
       toast({

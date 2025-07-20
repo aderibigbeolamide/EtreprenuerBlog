@@ -27,6 +27,7 @@ export interface IStorage {
   // Staff methods
   getAllStaff(): Promise<Staff[]>;
   getStaffById(id: number): Promise<Staff | undefined>;
+  getStaffByUserId(userId: number): Promise<Staff | undefined>;
   createStaff(staff: InsertStaff): Promise<Staff>;
   updateStaff(id: number, staff: Partial<InsertStaff>): Promise<Staff | undefined>;
   deleteStaff(id: number): Promise<boolean>;
@@ -137,10 +138,20 @@ export class MemStorage implements IStorage {
     return this.staff.get(id);
   }
 
+  async getStaffByUserId(userId: number): Promise<Staff | undefined> {
+    for (const staffMember of Array.from(this.staff.values())) {
+      if (staffMember.userId === userId && staffMember.isActive) {
+        return staffMember;
+      }
+    }
+    return undefined;
+  }
+
   async createStaff(staffData: InsertStaff): Promise<Staff> {
     const staff: Staff = {
       id: this.staffIdCounter++,
       ...staffData,
+      userId: staffData.userId ?? null,
       imageUrl: staffData.imageUrl ?? null,
       email: staffData.email ?? null,
       linkedinUrl: staffData.linkedinUrl ?? null,
@@ -356,6 +367,14 @@ export class DatabaseStorage implements IStorage {
 
   async getStaffById(id: number): Promise<Staff | undefined> {
     const [staffMember] = await db.select().from(staff).where(eq(staff.id, id));
+    return staffMember || undefined;
+  }
+
+  async getStaffByUserId(userId: number): Promise<Staff | undefined> {
+    const [staffMember] = await db
+      .select()
+      .from(staff)
+      .where(and(eq(staff.userId, userId), eq(staff.isActive, true)));
     return staffMember || undefined;
   }
 

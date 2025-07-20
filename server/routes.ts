@@ -119,6 +119,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get staff profile for a specific user (for user dashboard)
+  app.get("/api/staff/user/:userId", requireApprovedAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Users can only access their own staff profile
+      if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const storage = await getStorage();
+      const staff = await storage.getStaffByUserId(userId);
+      
+      if (!staff) {
+        return res.status(404).json({ message: "Staff profile not found" });
+      }
+      
+      res.json(staff);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch staff profile" });
+    }
+  });
+
   // Public comment routes
   app.get("/api/blog-posts/:id/comments", async (req, res) => {
     try {
@@ -146,6 +169,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(comment);
     } catch (error) {
       res.status(400).json({ message: "Failed to create comment" });
+    }
+  });
+
+  // Staff management routes (approved users can create/update their own profile)
+  app.post("/api/staff", requireApprovedAuth, upload.single('image'), async (req, res) => {
+    try {
+      let imageUrl = null;
+      
+      // Upload image to Cloudinary if provided
+      if (req.file) {
+        const imageUpload = await uploadToCloudinary(req.file, {
+          folder: 'staff-images',
+          resource_type: 'image'
+        });
+        imageUrl = imageUpload.secure_url;
+      }
+
+      const staffData = insertStaffSchema.parse({
+        ...req.body,
+        userId: req.user.id, // Set userId to current user
+        imageUrl: imageUrl,
+      });
+      
+      const storage = await getStorage();
+      const staff = await storage.createStaff(staffData);
+      res.status(201).json(staff);
+    } catch (error) {
+      console.error("Error creating staff profile:", error);
+      res.status(400).json({ message: "Failed to create staff profile" });
+    }
+  });
+
+  app.patch("/api/staff/:id", requireApprovedAuth, upload.single('image'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const storage = await getStorage();
+      
+      // Check if user owns this staff profile or is admin
+      const existingStaff = await storage.getStaffById(id);
+      if (!existingStaff || (existingStaff.userId !== req.user.id && req.user.role !== 'admin')) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      let imageUrl = existingStaff.imageUrl;
+      
+      // Upload new image to Cloudinary if provided
+      if (req.file) {
+        const imageUpload = await uploadToCloudinary(req.file, {
+          folder: 'staff-images',
+          resource_type: 'image'
+        });
+        imageUrl = imageUpload.secure_url;
+        
+        // Delete old image if it exists
+        if (existingStaff.imageUrl) {
+          try {
+            await deleteFromCloudinary(existingStaff.imageUrl);
+          } catch (error) {
+            console.error("Error deleting old staff image:", error);
+          }
+        }
+      }
+
+      const staffData = {
+        ...req.body,
+        imageUrl: imageUrl,
+      };
+      
+      const staff = await storage.updateStaff(id, staffData);
+      res.json(staff);
+    } catch (error) {
+      console.error("Error updating staff profile:", error);
+      res.status(400).json({ message: "Failed to update staff profile" });
     }
   });
 

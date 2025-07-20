@@ -13,6 +13,7 @@ import ContactPage from "@/pages/contact-page";
 import AuthPage from "@/pages/auth-page";
 import AdminDashboard from "@/pages/admin-dashboard";
 import CreateBlogPage from "@/pages/create-blog-page";
+import UserDashboard from "@/pages/user-dashboard";
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "./lib/protected-route";
 
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/admin" component={AdminDashboard} />
       <ProtectedRoute path="/create-blog" component={CreateBlogPage} />
+      <ProtectedRoute path="/user-dashboard" component={UserDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

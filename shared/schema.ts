@@ -17,6 +17,7 @@ export const users = pgTable("users", {
 // Staff members
 export const staff = pgTable("staff", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
   name: text("name").notNull(),
   role: text("role").notNull(),
   bio: text("bio").notNull(),

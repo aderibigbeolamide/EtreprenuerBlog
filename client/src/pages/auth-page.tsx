@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
+import { Redirect, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldQuestion, Bot, TrendingUp, Users } from "lucide-react";
+import { ShieldQuestion, Bot, TrendingUp, Users, Home } from "lucide-react";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [registerData, setRegisterData] = useState({ username: "", password: "", confirmPassword: "" });
 
-  // Redirect if already logged in
+  // Redirect if already logged in based on role
   if (user) {
-    return <Redirect to="/admin" />;
+    if (user.role === 'admin') {
+      return <Redirect to="/admin" />;
+    } else {
+      return <Redirect to="/user-dashboard" />;
+    }
   }
 
   const handleLogin = (e: React.FormEvent) => {
@@ -83,10 +87,18 @@ export default function AuthPage() {
         <div className="w-full max-w-md mx-auto">
           <Card className="shadow-2xl">
             <CardHeader className="text-center">
+              <div className="flex justify-between items-center mb-2">
+                <Link href="/">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-blue-700">
+                    <Home className="h-4 w-4 mr-2" />
+                    Home
+                  </Button>
+                </Link>
+              </div>
               <CardTitle className="text-2xl font-bold text-gray-900">
-                Admin Access
+                Access Portal
               </CardTitle>
-              <p className="text-gray-600">Sign in to manage content and platform settings</p>
+              <p className="text-gray-600">Sign in to access your dashboard or register for an account</p>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="login" className="w-full">
