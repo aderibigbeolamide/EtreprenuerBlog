@@ -97,7 +97,7 @@ function UserDashboardContent({ user }: { user: any }) {
     },
   });
 
-  // Fetch user's blog posts
+  // Fetch user's own blog posts only
   const { data: blogPosts = [], isLoading: postsLoading } = useQuery({
     queryKey: ["/api/blog-posts", "user", user.username],
     queryFn: async () => {
@@ -489,7 +489,7 @@ function BlogsTab({ blogPosts, postsLoading, user }: any) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts", "user", user.username] });
       toast({ title: "Blog post deleted successfully!" });
     },
     onError: (error: Error) => {
@@ -595,7 +595,7 @@ function CreateBlogTab({ user }: any) {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts", "user", user.username] });
       toast({ title: "Blog post created successfully!" });
       setFormData({
         title: "",

@@ -80,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = {
         search: search as string,
         authorName: authorName as string,
-        published: published === "true"
+        published: published === "all" ? undefined : published === "true"
       };
       
       const storage = await getStorage();
