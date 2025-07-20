@@ -178,6 +178,19 @@ The application is designed for easy deployment on platforms like Replit, with a
   - Password confirmation: Trimmed comparison for accurate matching
   - Input validation: Prevents submission of whitespace-only credentials
 
+### January 20, 2025 - Authentication API Fix & Complete Whitespace Resolution
+- **Fixed critical authentication API issue:**
+  - Corrected apiRequest function signature in queryClient.ts from (method, url, data) to (url, options)
+  - Updated all authentication mutations in use-auth.tsx to use new signature
+  - Fixed user approval system that was failing due to incorrect API call format
+  - All API endpoints now properly communicate between frontend and backend
+- **Comprehensive whitespace handling verification:**
+  - Tested login with padded whitespace: "  testuser  " and "  testpass  " successfully authenticates
+  - Backend properly trims credentials before authentication check
+  - Frontend validation prevents empty or whitespace-only submissions
+  - User approval system working correctly for approved accounts
+  - Session management fully functional with proper cookie handling
+
 ### January 19, 2025 - Enhanced Video System & Migration Completion
 - **Fixed staff image display issues:**
   - Improved circular image containers to properly show faces without cropping
