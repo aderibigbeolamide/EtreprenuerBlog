@@ -125,8 +125,37 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/auth/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        console.error("Authentication error:", err);
+        return res.status(500).json({ message: "Authentication error" });
+      }
+      
+      if (!user) {
+        console.log("Login failed:", info?.message || "Invalid credentials");
+        return res.status(401).json({ 
+          message: info?.message || "Invalid username or password" 
+        });
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Login session error:", loginErr);
+          return res.status(500).json({ message: "Session error" });
+        }
+        
+        console.log("Login successful for user:", user.username);
+        const safeUser = {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          isApproved: user.isApproved
+        };
+        console.log("Sending user data:", safeUser);
+        res.status(200).json(safeUser);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/auth/logout", (req, res, next) => {
