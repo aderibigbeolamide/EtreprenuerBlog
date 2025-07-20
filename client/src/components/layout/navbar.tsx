@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
-import { Menu, ShieldQuestion, X } from "lucide-react";
+import { Menu, ShieldQuestion, X, PlusCircle } from "lucide-react";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -64,20 +64,28 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Admin Button */}
-          <div className="hidden md:block">
+          {/* Action Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            {user?.isApproved && (
+              <Link href="/create-blog">
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create Post
+                </Button>
+              </Link>
+            )}
             {user ? (
               <Link href="/admin">
                 <Button className="bg-primary hover:bg-blue-700 text-white">
                   <ShieldQuestion className="mr-2 h-4 w-4" />
-                  Admin Dashboard
+                  {user.role === 'admin' ? 'Dashboard' : 'Profile'}
                 </Button>
               </Link>
             ) : (
               <Link href="/auth">
                 <Button className="bg-primary hover:bg-blue-700 text-white">
                   <ShieldQuestion className="mr-2 h-4 w-4" />
-                  Admin Login
+                  Login
                 </Button>
               </Link>
             )}
@@ -108,7 +116,19 @@ export default function Navbar() {
                     </Link>
                   ))}
                   
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t space-y-3">
+                    {user?.isApproved && (
+                      <Link href="/create-blog">
+                        <Button 
+                          variant="outline"
+                          className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Create Post
+                        </Button>
+                      </Link>
+                    )}
                     {user ? (
                       <Link href="/admin">
                         <Button 
@@ -116,7 +136,7 @@ export default function Navbar() {
                           onClick={() => setIsOpen(false)}
                         >
                           <ShieldQuestion className="mr-2 h-4 w-4" />
-                          Admin Dashboard
+                          {user.role === 'admin' ? 'Dashboard' : 'Profile'}
                         </Button>
                       </Link>
                     ) : (

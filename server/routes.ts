@@ -16,6 +16,8 @@ import {
   getAdaptiveVideoUrls
 } from "./cloudinary";
 
+const uploadDir = path.join(process.cwd(), 'uploads');
+
 function requireAuth(req: any, res: any, next: any) {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: "Authentication required" });
@@ -144,6 +146,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(comment);
     } catch (error) {
       res.status(400).json({ message: "Failed to create comment" });
+    }
+  });
+
+  // User blog post creation routes (approved users)
+  app.post("/api/blog-posts", requireApprovedAuth, upload.fields([
+    { name: 'images', maxCount: 10 },
+    { name: 'videos', maxCount: 5 }
+  ]), async (req, res) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      let imageUrls: string[] = [];
+      let videoUrls: string[] = [];
+      
+      // Upload images to Cloudinary
+      if (files?.images && files.images.length > 0) {
+        const imageUploads = await uploadMultipleToCloudinary(files.images, {
+          folder: 'blog-posts/images',
+          resource_type: 'image'
+        });
+        imageUrls = imageUploads.map(upload => upload.secure_url);
+      }
+      
+      // Upload videos to Cloudinary
+      if (files?.videos && files.videos.length > 0) {
+        const videoUploads = await uploadMultipleToCloudinary(files.videos, {
+          folder: 'blog-posts/videos',
+          resource_type: 'video'
+        });
+        videoUrls = videoUploads.map(upload => upload.secure_url);
+      }
+
+      const postData = insertBlogPostSchema.parse({
+        ...req.body,
+        authorName: req.user.username, // Set author to current user
+        imageUrls: imageUrls.length > 0 ? imageUrls : null,
+        videoUrls: videoUrls.length > 0 ? videoUrls : null,
+        isPublished: req.body.isPublished === 'true',
+        isAiGenerated: req.body.isAiGenerated === 'true'
+      });
+
+      const storage = await getStorage();
+      const post = await storage.createBlogPost(postData);
+      res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(400).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  // AI content generation for approved users
+  app.post("/api/generate-content", requireApprovedAuth, upload.single('image'), async (req, res) => {
+    try {
+      const { headline } = req.body;
+      
+      if (!headline) {
+        return res.status(400).json({ message: "Headline is required" });
+      }
+
+      let imageBase64: string | undefined;
+      
+      if (req.file) {
+        // Use the file buffer directly from memory storage
+        imageBase64 = req.file.buffer.toString('base64');
+      }
+
+      const generatedContent = await generateBlogContent(headline, imageBase64);
+      
+      res.json(generatedContent);
+    } catch (error) {
+      console.error("Error generating content:", error);
+      res.status(500).json({ message: "Failed to generate content" });
+    }
+  });
+
+  // File upload endpoints for approved users
+  app.post("/api/upload-image", requireApprovedAuth, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const uploadResult = await uploadToCloudinary(req.file.buffer, {
+        folder: 'uploads/images',
+        resource_type: 'image'
+      });
+
+      res.json({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        optimizedUrl: getOptimizedImageUrl(uploadResult.public_id)
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  app.post("/api/upload-video", requireApprovedAuth, upload.single('video'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file provided" });
+      }
+
+      const uploadResult = await uploadToCloudinary(req.file.buffer, {
+        folder: 'uploads/videos',
+        resource_type: 'video',
+        video_codec: 'h264',
+        audio_codec: 'aac',
+        quality: 'auto:best',
+        format: 'mp4'
+      });
+
+      const optimizedUrl = getOptimizedVideoUrl(uploadResult.public_id, {
+        quality: 'auto:best',
+        format: 'mp4'
+      });
+
+      const adaptiveQualities = getAdaptiveVideoUrls(uploadResult.public_id);
+
+      res.json({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        optimizedUrl,
+        adaptiveQualities,
+        metadata: {
+          format: uploadResult.format,
+          width: uploadResult.width,
+          height: uploadResult.height,
+          duration: uploadResult.duration,
+          bitrate: uploadResult.bit_rate,
+          fileSize: uploadResult.bytes
+        }
+      });
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      res.status(500).json({ message: "Failed to upload video" });
     }
   });
 
